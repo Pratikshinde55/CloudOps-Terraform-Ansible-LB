@@ -147,24 +147,20 @@ resource "null_resource" "PS-NULL-block" {
    } 
    provisioner "remote-exec" {
      inline = [
-       "sudo yum install httpd -y" ,
-       "sudo touch /var/www/html/index.html" ,
-       "sudo echo 'Hi i am ps' | sudo tee /var/www/html/index.html" ,
-       "sudo systemctl start httpd" ,
 
-       # Create the pratik user
+       # Create the pratik user 
       "sudo useradd pratik",
 
       # Set the password for the user
       "echo 'pratik:5577' | sudo chpasswd",
 
-      # Grant root privileges without a password for pratik
+      # Grant root privileges for pratik user and nopass ask while using
       "echo 'pratik ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers",
       
-      # Remove the line "PasswordAuthentication no" if it exists
+      # Remove the line "PasswordAuthentication no" if it exists(This line is already present so we remove it)
       "sudo sed -i '/^PasswordAuthentication no/d' /etc/ssh/sshd_config",
 
-      # Modify SSH config to allow root login and password authentication
+      # Modify SSH config to allow root login and password authentication (This is for Ansible master-slave architecture)
       "sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config",
       "sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config",
 
