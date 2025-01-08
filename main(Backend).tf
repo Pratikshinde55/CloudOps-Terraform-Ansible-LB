@@ -71,6 +71,7 @@ resource "aws_route_table" "PS-route-block" {
   tags = {
     Name = "Pratik-route"
   }
+
 }
 
 
@@ -84,7 +85,7 @@ resource "aws_route_table_association" "PS-T_asso-block" {
 
 resource "aws_security_group" "PS-SG-block" {
  
-  vpc_id = aws_vpc.PS-vpc-block.id     #IMP 
+  vpc_id = aws_vpc.PS-vpc-block.id
   
   name = "Pratik-SG-By-Terra"
   description = "Pratik-allow-sg-for-own-vpc"
@@ -118,18 +119,24 @@ variable "Allow-traffic"{
    default = [ 80 , 22 , 8080 , 443]
 }
 
+
+
+
 resource "aws_instance" "PS-ec2-block" {
   ami = data.aws_ami.PS-ami-block.id
   key_name = "psTerraform-key"
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.PS-SG-block.id]
-  subnet_id = element(aws_subnet.PS-Subnet-block.*.id , 0)
+
+  subnet_id = element(aws_subnet.PS-Subnet-block.*.id , count.index % 2)
   associate_public_ip_address = true 
+
+  count = 3
   
   tags = {
-    Name = "Pratik-ec2"
+    Name = "PratikTF-${var.InstanceName[count.index]}"
   }
-
+  
   depends_on = [
      aws_vpc.PS-vpc-block ,
      aws_subnet.PS-Subnet-block ,
@@ -137,43 +144,52 @@ resource "aws_instance" "PS-ec2-block" {
   ]
 }
 
+variable  "InstanceName" {
+    type = list(string)
+    default = ["Backend-1", "Backend-2" , "Backend-3"]
+}
+
+
 resource "null_resource" "PS-NULL-block" {
-   
+   count = 3
+
    connection {
      type = "ssh"
      user = "ec2-user"
      private_key = file("F:/psTerraform-key.pem")
-     host = aws_instance.PS-ec2-block.public_ip
+     host = aws_instance.PS-ec2-block[count.index].public_ip
    } 
    provisioner "remote-exec" {
      inline = [
-
-       # Create the pratik user 
+       
+       # Create the pratik user
       "sudo useradd pratik",
 
       # Set the password for the user
       "echo 'pratik:5577' | sudo chpasswd",
 
-      # Grant root privileges for pratik user and nopass ask while using
+      # Grant root privileges without a password for pratik
       "echo 'pratik ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers",
       
-      # Remove the line "PasswordAuthentication no" if it exists(This line is already present so we remove it)
+      # Remove the line "PasswordAuthentication no" if it exists
       "sudo sed -i '/^PasswordAuthentication no/d' /etc/ssh/sshd_config",
 
-      # Modify SSH config to allow root login and password authentication (This is for Ansible master-slave architecture)
+      # Modify SSH config to allow root login and password authentication
       "sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config",
       "sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config",
 
       # Restart SSH service to apply changes
       "sudo systemctl restart sshd"
-    ]
+     ]
    }
- }
+}
 
 resource "null_resource" "PS-Local-exec" {
    
-    provisioner "local-exec"{
-      when = destroy
-      command = "echo hi setup is destroying and it will destroyed....> destroyCall1.txt"
-    }
+ provisioner "local-exec"{
+
+  when = destroy
+  command = "echo hi setup is destroying and it will destroyed....> destroyCall1.txt"
+ }
+
 }
