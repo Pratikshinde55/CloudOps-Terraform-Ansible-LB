@@ -309,3 +309,31 @@ resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-IP" {
   ]
 }    
 
+
+
+resource "null_resource" "PS-Null-Ansible-Master-Block-Setup" {
+    
+    connection {
+       type = "ssh"
+       user = "ec2-user"
+       private_key = file("F:/psTerraform-key.pem")
+       host= aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+    }
+     provisioner "file" {
+       source      = "C:/Users/prati/terraform-2025/terraform-try5/ansible-setup.sh"  
+       destination = "/home/psadmin/ansible-setup.sh"  
+     }
+
+     provisioner "remote-exec" {
+        inline = [
+          # script is executable
+          "chmod +x /home/psadmin/ansible-setup.sh",
+
+          # Run the script with sudo
+          "sudo /home/psadmin/ansible-setup.sh"
+        ]
+     }
+
+}
+
+
