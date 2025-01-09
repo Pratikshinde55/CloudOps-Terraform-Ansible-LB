@@ -296,13 +296,11 @@ resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-IP" {
       "echo 'Generating Backend IP list for Ansible Master' > Backend-public-ip",
 
       # Loop through all the backend EC2 instances and add their details to the file
-      # Each line will be in the format: 'pratik <public_ip> 1234'
+      # Each line will be in the format: 'pratik <my-ec2-name> <public_ip> 1234'
       join("\n", [
-        for ip in aws_instance.PS-EC2-Backend-block : "echo 'pratik ${ip.public_ip} 1234' >> Backend-public-ip"
-      ]),
-
-      # Optional: Display the generated file for debugging purposes
-      "cat Backend-public-ip"
+        for ip in aws_instance.PS-EC2-Backend-block : 
+          "echo 'pratik ${ip.tags.Name} ${ip.public_ip} 1234' >> Backend-public-ip"
+      ])
     ]
   }
 
