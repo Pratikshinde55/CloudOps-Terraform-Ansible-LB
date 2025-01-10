@@ -1,39 +1,39 @@
+### "aws_ami data source for retrieve AMI id for EC2" 
 data "aws_ami" "PS-ami-block" {
 
   most_recent = true
-  owners      = ["amazon"]
+  owners = ["amazon"]
 
   filter {
-    name   = "name"
+    name = "name"
     values = ["amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2"]
   }
   filter {
-    name   = "root-device-type"
+    name = "root-device-type"
     values = ["ebs"]
   }
   filter {
-    name   = "virtualization-type"
+    name = "virtualization-type"
     values = ["hvm"]
   }
 }
 
-
-
-
+### "aws_vpc resource for create vpc for aws"
 resource "aws_vpc" "PS-vpc-block" {
+
   cidr_block = "10.0.0.0/16"
   tags = {
     Name = "TF-Pratik-vpc"
   }
 }
 
-
+### "aws_subnet" is for create subnet, Here use Multi Subnet AZs
 resource "aws_subnet" "PS-Subnet-block" {
 
-  count                   = length(var.SubnetRange)
-  vpc_id                  = aws_vpc.PS-vpc-block.id
-  cidr_block              = element(var.SubnetRange, count.index)
-  availability_zone       = element(var.AZRange, count.index)
+  count = length(var.SubnetRange)
+  vpc_id = aws_vpc.PS-vpc-block.id
+  cidr_block = element(var.SubnetRange, count.index)
+  availability_zone = element(var.AZRange, count.index)
   map_public_ip_on_launch = true
 
   tags = {
@@ -44,10 +44,12 @@ resource "aws_subnet" "PS-Subnet-block" {
   ]
 }
 
+
 variable "SubnetRange" {
   type    = list(string)
   default = ["10.0.1.0/24", "10.0.2.0/24"]
 }
+
 
 variable "AZRange" {
   type    = list(any)
@@ -55,6 +57,7 @@ variable "AZRange" {
 }
 
 
+### "aws_internet_gateway" resource for my VPC
 resource "aws_internet_gateway" "PS-Gateway-block" {
 
   vpc_id = aws_vpc.PS-vpc-block.id
@@ -63,6 +66,8 @@ resource "aws_internet_gateway" "PS-Gateway-block" {
   }
 }
 
+
+### aws_route_table resource
 resource "aws_route_table" "PS-route-block" {
 
   vpc_id = aws_vpc.PS-vpc-block.id
@@ -78,6 +83,7 @@ resource "aws_route_table" "PS-route-block" {
 }
 
 
+### In This Resource use Count because Multi Subnet i create
 resource "aws_route_table_association" "PS-T_asso-block" {
 
   count          = length(var.SubnetRange)
@@ -86,11 +92,13 @@ resource "aws_route_table_association" "PS-T_asso-block" {
 
 }
 
+
+### This resource for create Dynamic SG for my VPC
 resource "aws_security_group" "PS-SG-block" {
 
-  vpc_id = aws_vpc.PS-vpc-block.id    #IMP
+  vpc_id = aws_vpc.PS-vpc-block.id
 
-  name        = "Pratik-SG-By-TF"
+  name = "Pratik-SG-By-TF"
   description = "Pratik-allow-sg-for-own-vpc"
 
   dynamic "ingress" {
@@ -98,16 +106,16 @@ resource "aws_security_group" "PS-SG-block" {
     iterator = port
     content {
       description = "allow inbound rule"
-      from_port   = port.value
-      to_port     = port.value
-      protocol    = "tcp"
+      from_port = port.value
+      to_port = port.value
+      protocol = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
   }
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
   depends_on = [
@@ -122,21 +130,22 @@ variable "Allow-traffic" {
   default = [80, 22, 8080, 443]
 }
 
-
-
-
+### "In This Resource Create BackEnds(3-Instances) with count meta argument" 
 resource "aws_instance" "PS-EC2-Backend-block" {
-  ami                    = data.aws_ami.PS-ami-block.id
-  key_name               = "psTerraform-key"
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.PS-SG-block.id]
 
-  subnet_id                   = element(aws_subnet.PS-Subnet-block.*.id , count.index % 2)
+  ami = data.aws_ami.PS-ami-block.id
+  key_name = "psTerraform-key"
+  instance_type = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.PS-SG-block.id]
+       # element is used because multiple subnets created .*.id
+       # "count.index % 2" this enable Round Robin Alogorithm A -> B ->A ->B
+  subnet_id = element(aws_subnet.PS-Subnet-block.*.id , count.index % 2)
   associate_public_ip_address = true
 
   count = 3
 
   tags = {
+    #Name = "Pratik-TF-Backend-${count.index + 1}"
     Name = "Pratik-TF-${var.InstanceName[count.index]}"
   }
 
@@ -147,21 +156,30 @@ resource "aws_instance" "PS-EC2-Backend-block" {
   ]
 }
 
+
 variable "InstanceName" {
   type    = list(string)
   default = ["Backend-1", "Backend-2", "Backend-3"]
 }
+output "PS-Backend-IPs" {
+  value = aws_instance.PS-EC2-Backend-block.*.public_ip
+}
 
 
-resource "null_resource" "PS-NULL-Backend-block" {
-  count = 3
+### This null_resource use for Backend SSH Sonfiguration
+resource "null_resource" "PS-NULL-Backend-ssh-block" {
+
+     # length for BackEnd resource
+  count = length(aws_instance.PS-EC2-Backend-block)
 
   connection {
     type        = "ssh"
     user        = "ec2-user"
     private_key = file("F:/psTerraform-key.pem")
+      # Here use count.index because i creates 3 EC2 for BackEnd
     host        = aws_instance.PS-EC2-Backend-block[count.index].public_ip
   }
+
   provisioner "remote-exec" {
     inline = [
 
@@ -187,24 +205,15 @@ resource "null_resource" "PS-NULL-Backend-block" {
   }
 }
 
-resource "null_resource" "PS-Local-exec" {
 
-  provisioner "local-exec" {
-
-    when    = destroy
-    command = "echo hi setup is destroying and it will destroyed....> destroyCall1.txt"
-  }
-
-}
-
-
+### This Resource create FrontEnd Instance for loadBlancer
 resource "aws_instance" "PS-EC2-FrontEnd-Block" {
 
   ami = data.aws_ami.PS-ami-block.id
   instance_type = "t2.micro"
   key_name = "psTerraform-key"
   vpc_security_group_ids = [aws_security_group.PS-SG-block.id]
-  
+      # element because multi subnet & '0' means launch in 1st available zone
   subnet_id = element(aws_subnet.PS-Subnet-block.*.id , 0)
   associate_public_ip_address = true 
   
@@ -219,7 +228,9 @@ resource "aws_instance" "PS-EC2-FrontEnd-Block" {
   ]
 }
 
-resource "null_resource" "PS-Null-Frontend-Block" {
+
+### This null_resource use for FrontEnd SSH Configuration
+resource "null_resource" "PS-Null-Frontend-ssh-Block" {
 
    connection {
      type = "ssh"
@@ -242,6 +253,7 @@ resource "null_resource" "PS-Null-Frontend-Block" {
 }
 
 
+### This Resource Launch a EC2 Instance for Ansible-Master
 resource "aws_instance" "PS-EC2-Ansible-Master-Block" {
 
   ami = data.aws_ami.PS-ami-block.id
@@ -257,7 +269,9 @@ resource "aws_instance" "PS-EC2-Ansible-Master-Block" {
   }
 }
 
-resource "null_resource" "PS-Null-Ansible-Master-Block" {
+
+### This null_resource for Ansible Master SSH Configuration
+resource "null_resource" "PS-Null-Ansible-Master-ssh-Block" {
 
   connection {
     type = "ssh"
@@ -265,6 +279,7 @@ resource "null_resource" "PS-Null-Ansible-Master-Block" {
     private_key = file("F:/psTerraform-key.pem")
     host = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
   }
+
   provisioner "remote-exec" {
     inline = [
       
@@ -275,13 +290,13 @@ resource "null_resource" "PS-Null-Ansible-Master-Block" {
       "sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config",
       "sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config" ,
       "sudo systemctl restart sshd" ,
-     ] 
+    ] 
   }
 }
-    
 
 
-resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-IP" {
+### This null_resource for store dynamically Public_IP of Backend's in AnsibleMaster EC2
+resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-BackEndIP" {
 
   connection {
     type        = "ssh"
@@ -293,47 +308,108 @@ resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-IP" {
   provisioner "remote-exec" {
     inline = [
       # Create a new file to store the backend instance IPs with user and password
-      "echo 'Generating Backend IP list for Ansible Master' > Backend-public-ip",
+      "echo 'Generating BackEnd IP list for Ansible Master' > BackEnd-public-ip",
 
       # Loop through all the backend EC2 instances and add their details to the file
-      # Each line will be in the format: 'pratik <my-ec2-name> <public_ip> 1234'
+      # Each line will be in the format: 'pratik <public_ip> 1234'
+      
+      
       join("\n", [
-        for ip in aws_instance.PS-EC2-Backend-block : 
-          "echo 'pratik ${ip.tags.Name} ${ip.public_ip} 1234' >> Backend-public-ip"
+        for instance in aws_instance.PS-EC2-Backend-block : 
+          #"echo 'pratik ${ip.tags.Name} ${ip.public_ip} 1234' >> BackEnd-public-ip"
+          "echo 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' >> BackEnd-public-ip"
       ])
     ]
   }
-
   depends_on = [
-    aws_instance.PS-EC2-Backend-block
+    aws_instance.PS-EC2-Backend-block , 
+    aws_instance.PS-EC2-Ansible-Master-Block 
   ]
-}    
-
-
-
-resource "null_resource" "PS-Null-Ansible-Master-Block-Setup" {
-    
-    connection {
-       type = "ssh"
-       user = "ec2-user"
-       private_key = file("F:/psTerraform-key.pem")
-       host= aws_instance.PS-EC2-Ansible-Master-Block.public_ip
-    }
-     provisioner "file" {
-       source      = "C:/Users/prati/terraform-2025/terraform-try5/ansible-setup.sh"  
-       destination = "/home/psadmin/ansible-setup.sh"  
-     }
-
-     provisioner "remote-exec" {
-        inline = [
-          # script is executable
-          "chmod +x /home/psadmin/ansible-setup.sh",
-
-          # Run the script with sudo
-          "sudo /home/psadmin/ansible-setup.sh"
-        ]
-     }
-
 }
 
 
+### This null_resource for store FrontEnd Public_IP in Ansible Master EC2
+resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-FrontEndIP" {
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("F:/psTerraform-key.pem")
+    host        = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      # Create a new file to store the backend instance IPs with user and password
+      "echo 'Generating FrontEnd IP list for Ansible Master' > FrontEnd-public-ip",
+  
+       join("\n", [
+         for instance in tolist([aws_instance.PS-EC2-FrontEnd-Block]) :
+          # for instance in aws_instance.PS-EC2-FrontEnd-Block :
+           "echo 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' >> FrontEnd-public-ip"
+       ])
+    ]
+  } 
+   
+  depends_on = [
+    aws_instance.PS-EC2-Ansible-Master-Block , 
+    aws_instance.PS-EC2-FrontEnd-Block
+  ]
+}
+
+output "FrontEnd_public_ip" {
+  value = aws_instance.PS-EC2-FrontEnd-Block.public_ip
+}  
+
+
+### This null_resource copy ansible-setup.sh script file on Ansible & execute 
+resource "null_resource" "PS-Null-Ansible-Installation-Block" {
+    
+    connection {
+      type = "ssh"
+      user = "ec2-user"
+      private_key = file("F:/psTerraform-key.pem")
+      host= aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+    }
+
+    provisioner "file" {
+      source      = "C:/Users/prati/terraform-2025/terraform-try5/ansible-setup.sh"  
+      destination = "/home/ec2-user/ansible-setup.sh"  
+    }
+
+    provisioner "remote-exec" {
+      inline = [
+        # script is executable
+        "chmod +x /home/ec2-user/ansible-setup.sh",
+
+        # Run the script with sudo
+        "sudo /home/ec2-user/ansible-setup.sh"
+      ]
+    }
+}
+
+
+### This null_resource run only if terraform destroy cmd run
+resource "null_resource" "PS-Local-exec-Destroy-block" {
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = "echo ALL set-up/Infrastucture or servers destroyed....> All_Destroy.txt"
+  }
+}
+
+
+variable "PSMap" {
+   type = map
+   default = {
+
+       AuthorName = "Pratik_Shinde" ,
+       IaC = "Terraform" ,
+       Provider_use = "AWS_Cloud" ,
+       Project_Name = "End-to-End Cloud Automation with Terraform, Ansible, and GitHub"  
+    }
+}
+
+output "Information_about_Project" {
+    value = var.PSMap
+}
