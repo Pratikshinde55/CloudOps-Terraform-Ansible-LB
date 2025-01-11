@@ -389,6 +389,75 @@ resource "null_resource" "PS-Null-Ansible-Installation-Block" {
 }
 
 
+### This null_resource use for settings ansible config file
+resource "null_resource" "PS-Null-Ansible-Master-SetAnsible-Config" {
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("F:/psTerraform-key.pem")
+    host        = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      # Uncomment privilege escalation lines
+      "sudo sed -i 's/^#become=True/become=True/' /etc/ansible/ansible.cfg",
+      "sudo sed -i 's/^#become_ask_pass=False/become_ask_pass=False/' /etc/ansible/ansible.cfg",
+      "sudo sed -i 's/^#become_method=sudo/become_method=sudo/' /etc/ansible/ansible.cfg",
+      "sudo sed -i 's/^#become_user=root/become_user=root/' /etc/ansible/ansible.cfg",
+
+      # Uncomment the host_key_checking line
+      "sudo sed -i 's/^#host_key_checking=False/host_key_checking=False/' /etc/ansible/ansible.cfg"
+    ]
+  }
+
+  depends_on = [
+    aws_instance.PS-EC2-Ansible-Master-Block ,
+    null_resource.PS-Null-Ansible-Installation-Block
+  ]
+}
+
+
+### this null_resource set Inventory dynamically in ansible master
+
+resource "null_resource" "PS-Null-Ansible-Master-Block-Inventory-setup" {
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("F:/psTerraform-key.pem")
+    host        = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      # Add web group name in Inventory
+      "echo '[web]' | sudo tee -a /etc/ansible/hosts > /dev/null",
+
+      # Add backend EC2 instances to the 'web' group
+      join("\n", [
+        for instance in aws_instance.PS-EC2-Backend-block :
+          "echo '${instance.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a /etc/ansible/hosts > /dev/null"
+      ]),
+
+      # Add the lb host Group Name
+      "echo '[lb]' | sudo tee -a /etc/ansible/hosts > /dev/null",
+
+      # Add the frontend EC2 instance to the 'lb' group
+      "echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a /etc/ansible/hosts > /dev/null"
+    ]
+  }
+
+  depends_on = [
+    aws_instance.PS-EC2-Backend-block,
+    aws_instance.PS-EC2-FrontEnd-Block,
+    aws_instance.PS-EC2-Ansible-Master-Block , 
+    null_resource.PS-Null-Ansible-Installation-Block
+  ]
+}
+
+
 ### This null_resource run only if terraform destroy cmd run
 resource "null_resource" "PS-Local-exec-Destroy-block" {
 
