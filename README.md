@@ -75,4 +75,48 @@ Availability Zone (AZ) using the element function again.
         aws_vpc.PS-vpc-block
       ]
     }
+
+## 4. Variable Definitions: SubnetRange and AZRange
+variable block:  This make flexibility to add subet's cidr_block & AZs.
+
+    variable "SubnetRange" {
+      type = list(string)
+      default = ["10.0.1.0/24", "10.0.2.0/24"]
+    }
+    variable "AZRange" {
+      type    = list(any)
+      default = ["ap-south-1a", "ap-south-1b"]
+    }
+
+## 5. Resource: aws_internet_gateway
+**aws_internet_gateway:** Defines an internet gateway to allow communication between instances in the VPC and the outside world (internet).
+
+**vpc_id:** Associate the internet gateway with the created VPC.
+
+    resource "aws_internet_gateway" "PS-Gateway-block" {
+      vpc_id = aws_vpc.PS-vpc-block.id
+      tags = {
+        Name = "TF-Pratik-gateway"
+      }
+    }
+     
+## 6. Resource: aws_route_table
+**aws_route_table:** Defines a route table for the VPC.
+
+**route:** A route that forwards traffic destined for all IP addresses (0.0.0.0/0) to the internet gateway.
+
+    resource "aws_route_table" "PS-route-block" {
+      vpc_id = aws_vpc.PS-vpc-block.id
+      route {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = aws_internet_gateway.PS-Gateway-block.id
+      }
+      tags = {
+        Name = "TF-Pratik-route-table-For-VPC"
+      }
+    }
  
+
+
+
+
