@@ -63,6 +63,7 @@ Availability Zone (AZ) using the element function again.
 **map_public_ip_on_launch:** Ensures that instances launched in this subnet will automatically receive a public IP.
 
     resource "aws_subnet" "PS-Subnet-block" {
+    
       count = length(var.SubnetRange)
       vpc_id = aws_vpc.PS-vpc-block.id
       cidr_block = element(var.SubnetRange, count.index)
@@ -116,7 +117,23 @@ variable block:  This make flexibility to add subet's cidr_block & AZs.
       }
     }
  
+## 7. Resource: aws_route_table_association
+**aws_route_table_association:** Associates the route table with the subnets.
 
+**count:** Again used to create associations for each subnet.
 
+**subnet_id:** Links each subnet to the route table.
+
+**route_table_id:** Associates the route table.
+
+    resource "aws_route_table_association" "PS-T_asso-block" {
+    
+      count = length(var.SubnetRange)
+      subnet_id = element(aws_subnet.PS-Subnet-block.*.id, count.index)
+      route_table_id = aws_route_table.PS-route-block.id
+    }
+
+## 8. 
+ 
 
 
