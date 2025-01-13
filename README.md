@@ -25,7 +25,7 @@ Only Follwing three manual steps otherwise all things are Automatic
 My WorkSpace for this project:
 ![Workspace](https://github.com/user-attachments/assets/02faefa9-95bc-4d30-86c9-f0d10d253d04)
 
-  terraform apply --auto-approve
+    terraform apply --auto-approve
 
 ![terraform-apply](https://github.com/user-attachments/assets/cb88e6b5-5382-4eea-850c-edbd2034372a)
 
