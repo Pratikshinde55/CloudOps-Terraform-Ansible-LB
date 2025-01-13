@@ -585,9 +585,10 @@ sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC
           "echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a /etc/ansible/hosts > /dev/null"
           ]
       }
-      depends_on = [
    
-        aws_instance.PS-EC2-Backend-block,
+      depends_on = [
+
+       aws_instance.PS-EC2-Backend-block,
         aws_instance.PS-EC2-FrontEnd-Block,
         aws_instance.PS-EC2-Ansible-Master-Block , 
         null_resource.PS-Null-Ansible-Installation-Block
