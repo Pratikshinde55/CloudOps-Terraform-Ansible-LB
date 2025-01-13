@@ -327,4 +327,189 @@ This EC2 instance can be used as the Ansible Master Node.
       }
     }
 
-## 14. 
+## 14. Resource: null_resource for PS-Null-Ansible-Master-ssh-Block
+This null_resource is use to configuration of SSH on Ansible-Master node.
+
+    resource "null_resource" "PS-Null-Ansible-Master-ssh-Block" {
+      connection {
+        type = "ssh"
+        user = "ec2-user"
+        private_key = file("F:/psTerraform-key.pem")
+        host = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+      }
+      provisioner "remote-exec" {
+        inline = [  
+          "sudo useradd psadmin" ,
+          "echo 'psadmin:1234' | sudo chpasswd" ,
+          "echo 'psadmin ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers" ,
+          "sudo sed -i '/^PasswordAuthentication no/d' /etc/ssh/sshd_config",
+          "sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config",
+          "sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config" ,
+          "sudo systemctl restart sshd" 
+        ] 
+      }
+    }
+
+## 15. Resource: null_resource for PS-Null-Ansible-Master-Block-SAVE-BackEndIP
+This null_resource dynamically store Public_IP's of all Backends EC2 in ansible master node at location /home/ec2-user with file named as "BackEnd-public-ip".
+
+      join("\n", [
+         for instance in aws_instance.PS-EC2-Backend-block : 
+           "echo 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' >> BackEnd-public-ip"
+      ])
+
+This uses a for loop to iterate through all the EC2 instances defined in the aws_instance.PS-EC2-Backend-block resource, 
+which represents multiple EC2 backend instances.
+
+For each instance, it appends the string 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' to the BackEnd-public-ip file.
+
+**${instance.tags["Name"]}:** Retrieves the Name tag of the backend instance.
+
+**${instance.public_ip}:** Retrieves the public IP address of the backend instance.
+
+**join("\n", [...])** function is used to join all the individual commands into a single list of commands, separated by newlines.
+
+    resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-BackEndIP" {
+      connection {
+        type        = "ssh"
+        user        = "ec2-user"
+        private_key = file("F:/psTerraform-key.pem")
+        host        = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+      }
+      provisioner "remote-exec" {
+        inline = [
+          # Create a new file to store the backend instance IPs with user and password
+          "echo 'Generating BackEnd IP list for Ansible Master' > BackEnd-public-ip"
+      
+          join("\n", [
+            for instance in aws_instance.PS-EC2-Backend-block : 
+              #"echo 'pratik ${ip.tags.Name} ${ip.public_ip} 1234' >> BackEnd-public-ip"
+             "echo 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' >> BackEnd-public-ip"
+          ])
+        ]
+      }
+      depends_on = [
+        aws_instance.PS-EC2-Backend-block , 
+        aws_instance.PS-EC2-Ansible-Master-Block 
+      ]
+    }
+  
+## 15. Resource: null_resource for PS-Null-Ansible-Master-Block-SAVE-FrontEndIP
+This null_resource dynamically store Public_IP of FrontEnd EC2 in ansible master node at location /home/ec2-user with file named as "FrontEnd-public-ip".
+
+    join("\n", [
+      for instance in tolist([aws_instance.PS-EC2-FrontEnd-Block]) :
+       "echo 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' >> FrontEnd-public-ip"
+    ])
+
+**for instance in tolist([aws_instance.PS-EC2-FrontEnd-Block]):** This is a loop that iterates over the aws_instance.PS-EC2-FrontEnd-Block. 
+
+The **tolist([...])** converts the list of EC2 instances into a list that can be looped through.
+
+**pratik:** A static username.
+
+**${instance.tags["Name"]}:** The Name tag of the frontend EC2 instance (EX, "Pratik-TF-FrontEnd").
+
+**${instance.public_ip}:** The public IP address of the frontend EC2 instance.
+
+**1234:** A static password (example).
+
+**Fileformat** pratik <frontend_instance_name> <frontend_instance_public_ip> 1234
+
+    resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-FrontEndIP" {
+      connection {
+        type        = "ssh"
+        user        = "ec2-user"
+        private_key = file("F:/psTerraform-key.pem")
+        host        = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+      }
+      provisioner "remote-exec" {
+        inline = [
+          # Create a new file to store the backend instance IPs with user and password
+          "echo 'Generating FrontEnd IP list for Ansible Master' > FrontEnd-public-ip",
+  
+          join("\n", [
+            for instance in tolist([aws_instance.PS-EC2-FrontEnd-Block]) :
+              # for instance in aws_instance.PS-EC2-FrontEnd-Block :
+              "echo 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' >> FrontEnd-public-ip"
+          ])
+        ]
+      } 
+      depends_on = [
+        aws_instance.PS-EC2-Ansible-Master-Block , 
+        aws_instance.PS-EC2-FrontEnd-Block
+       ]
+    }
+
+    output "FrontEnd_public_ip" {
+      value = aws_instance.PS-EC2-FrontEnd-Block.public_ip
+    }  
+
+## 16. Resource: null_resource for PS-Null-Ansible-Installation-Block
+This null_resource copy ansible-setup.sh script file on Ansible-MAster EC2 & execute.
+
+**provisioner "file" Block**
+
+    provisioner "file" {
+      source      = "C:/Users/prati/terraform-2025/terraform-try5/ansible-setup.sh"
+      destination = "/home/ec2-user/ansible-setup.sh"
+    }
+
+provisioner "file": This provisioner uploads files from your local machine to the remote EC2 instance. 
+It is used to transfer the ansible-setup.sh script to the EC2 instance.
+
+source: This specifies the local path of the ansible-setup.sh script.
+
+destination: This specifies the remote path where the file will be uploaded on the EC2 instance.
+In my case, it will be copied to /home/ec2-user/ansible-setup.sh on the EC2 instance.
+
+**provisioner "remote-exec" Block**
+
+    provisioner "remote-exec" {
+      inline = [
+        # script is executable
+        "chmod +x /home/ec2-user/ansible-setup.sh",
+
+        # Run the script with sudo
+        "sudo /home/ec2-user/ansible-setup.sh"
+       ]
+    }
+
+chmod +x /home/ec2-user/ansible-setup.sh: This command makes the ansible-setup.sh script executable on the EC2 instance by changing its permissions.
+
+sudo /home/ec2-user/ansible-setup.sh: This command runs the ansible-setup.sh script with sudo.
+
+    resource "null_resource" "PS-Null-Ansible-Installation-Block" {
+      connection {
+        type = "ssh"
+        user = "ec2-user"
+        private_key = file("F:/psTerraform-key.pem")
+        host= aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+      }
+      provisioner "file" {
+        source      = "C:/Users/prati/terraform-2025/terraform-try5/ansible-setup.sh"  
+        destination = "/home/ec2-user/ansible-setup.sh"  
+      }
+      provisioner "remote-exec" {
+        inline = [
+          "chmod +x /home/ec2-user/ansible-setup.sh",
+          "sudo /home/ec2-user/ansible-setup.sh"
+        ]
+      }
+    } 
+
+## 17.
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
