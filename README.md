@@ -133,7 +133,39 @@ variable block:  This make flexibility to add subet's cidr_block & AZs.
       route_table_id = aws_route_table.PS-route-block.id
     }
 
-## 8. 
- 
+## 8.  Security Group Resource: aws_security_group
+**aws_security_group:** Creates a security group within the VPC.
+
+**ingress and egress:** Define the inbound and outbound rules for traffic.
+
+**dynamic block** Here used for dyanmic allow port no with variable var.Allow-traffic, 
+
+    resource "aws_security_group" "PS-SG-block" {
+      vpc_id = aws_vpc.PS-vpc-block.id
+  
+      dynamic "ingress" {
+        for_each = var.Allow-traffic
+        iterator = port
+        content {
+          description = "allow inbound rule"
+          from_port = port.value
+          to_port = port.value
+          protocol = "tcp"
+          cidr_blocks = ["0.0.0.0/0"]
+        }
+      }
+      egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+      }
+      depends_on = [
+        aws_vpc.PS-vpc-block,
+        aws_subnet.PS-Subnet-block,
+        aws_route_table_association.PS-T_asso-block
+      ]
+    }
+   
 
 
