@@ -394,7 +394,7 @@ For each instance, it appends the string 'pratik ${instance.tags["Name"]} ${inst
       ]
     }
   
-## 15. Resource: null_resource for PS-Null-Ansible-Master-Block-SAVE-FrontEndIP
+## 16. Resource: null_resource for PS-Null-Ansible-Master-Block-SAVE-FrontEndIP
 This null_resource dynamically store Public_IP of FrontEnd EC2 in ansible master node at location /home/ec2-user with file named as "FrontEnd-public-ip".
 
     join("\n", [
@@ -445,7 +445,7 @@ The **tolist([...])** converts the list of EC2 instances into a list that can be
       value = aws_instance.PS-EC2-FrontEnd-Block.public_ip
     }  
 
-## 16. Resource: null_resource for PS-Null-Ansible-Installation-Block
+## 17. Resource: null_resource for PS-Null-Ansible-Installation-Block
 This null_resource copy ansible-setup.sh script file on Ansible-MAster EC2 & execute.
 
 **provisioner "file" Block**
@@ -498,9 +498,49 @@ sudo /home/ec2-user/ansible-setup.sh: This command runs the ansible-setup.sh scr
       }
     } 
 
-## 17.
+## 18. Resource: null_resource for PS-Null-Ansible-Master-SetAnsible-Config
+This null_resource use for settings ansible config file
 
+**sudo sed -i 's/^#become=True/become=True/' /etc/ansible/ansible.cfg** -->>  This command uncomment the become=True line and enables privilege
+escalation, allowing Ansible to use sudo to elevate permissions during playbook runs.
 
+**sudo sed -i 's/^#become_ask_pass=False/become_ask_pass=False/' /etc/ansible/ansible.cfg:** -->> This command enables password-based privilege 
+escalation, ensuring that sudo does not ask for a password when escalating privileges. The False ensures the prompt to ask for the password is disabled.
+
+**sudo sed -i 's/^#become_method=sudo/become_method=sudo/' /etc/ansible/ansible.cfg:**  -->> his command sets the become_method to sudo. 
+It tells Ansible to use sudo as the method to escalate privileges when needed.
+
+**sudo sed -i 's/^#become_user=root/become_user=root/' /etc/ansible/ansible.cfg:** -->> This command sets the user that Ansible will become when 
+escalating privileges. Here, it ensures that Ansible will use the root user.
+
+**sudo sed -i 's/^#host_key_checking = False/host_key_checking = False/' /etc/ansible/ansible.cfg** -->> This command disables host key checking when 
+Ansible connects to remote hosts via SSH. This is useful in automated environments where host keys might change, and it's undesirable to manually 
+approve each new key.
+
+    resource "null_resource" "PS-Null-Ansible-Master-SetAnsible-Config" {
+      connection {
+        type        = "ssh"
+        user        = "ec2-user"
+        private_key = file("F:/psTerraform-key.pem")
+        host        = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+      }
+      provisioner "remote-exec" {
+        inline = [
+          # Uncomment privilege escalation lines
+          "sudo sed -i 's/^#become=True/become=True/' /etc/ansible/ansible.cfg",
+          "sudo sed -i 's/^#become_ask_pass=False/become_ask_pass=False/' /etc/ansible/ansible.cfg",
+          "sudo sed -i 's/^#become_method=sudo/become_method=sudo/' /etc/ansible/ansible.cfg",
+          "sudo sed -i 's/^#become_user=root/become_user=root/' /etc/ansible/ansible.cfg",
+          "sudo sed -i 's/^#host_key_checking = False/host_key_checking = False/' /etc/ansible/ansible.cfg" 
+        ]
+      }
+      depends_on = [
+        aws_instance.PS-EC2-Ansible-Master-Block ,
+        null_resource.PS-Null-Ansible-Installation-Block
+       ]
+    }
+
+## 19.
    
 
 
