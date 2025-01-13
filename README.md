@@ -21,7 +21,7 @@ My WorkSpace for this project:
 
   terraform apply --auto-approve
 
-![terraform-apply](https://github.com/user-attachments/assets/cb88e6b5-5382-4eea-850c-edbd2034372a
+![terraform-apply](https://github.com/user-attachments/assets/cb88e6b5-5382-4eea-850c-edbd2034372a)
 
 
 
