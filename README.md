@@ -256,4 +256,58 @@ This enables password authentication for SSH, ensuring that users can log in usi
       }
     } 
 
-## 11.
+## 11. Resource:aws_instance for PS-EC2-FrontEnd-Block
+**subnet_id:** Specifies the subnet in which to launch the EC2 instance.
+
+**aws_subnet.PS-Subnet-block.*.id** is a list of subnet IDs, retrieved dynamically from aws_subnet.PS-Subnet-block.
+
+**element(... , 0):** This function selects the first subnet ID (EX, 0 index) from the list of available subnets.
+In a multi-subnet setup, this ensures the instance is placed in the first available subnet in the list.
+
+**associate_public_ip_address:** By setting this to true, it ensures that the EC2 instance is assigned a public IP address upon creation.
+
+    resource "aws_instance" "PS-EC2-FrontEnd-Block" {
+      ami = data.aws_ami.PS-ami-block.id
+      instance_type = "t2.micro"
+      key_name = "psTerraform-key"
+      vpc_security_group_ids = [aws_security_group.PS-SG-block.id]
+      # element because multi subnet & '0' means launch in 1st available zone
+      subnet_id = element(aws_subnet.PS-Subnet-block.*.id , 0)
+      associate_public_ip_address = true 
+  
+      tags = {
+        Name = "Pratik-TF-FrontEnd-LoadBalancer"
+      }
+      depends_on = [
+        aws_subnet.PS-Subnet-block ,
+        aws_vpc.PS-vpc-block ,
+        aws_security_group.PS-SG-block
+      ]
+    }
+
+## 12. Resource: null_resource for PS-Null-Frontend-ssh-Block
+The null_resource block provided is used to configure SSH access on the Frontend EC2 instance after it has been created. 
+This block ensures that the necessary SSH configurations are applied to the instance.
+
+    
+    resource "null_resource" "PS-Null-Frontend-ssh-Block" {
+      connection {
+        type = "ssh"
+        user = "ec2-user"
+        private_key = file("F:/psTerraform-key.pem")
+        host = aws_instance.PS-EC2-FrontEnd-Block.public_ip
+      }
+      provisioner "remote-exec" {
+        inline = [
+          "sudo useradd pratik" ,
+          "echo 'pratik:1234' | sudo chpasswd" ,
+          "echo 'pratik ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers" ,
+          "sudo sed -i '/^PasswordAuthentication no/d' /etc/ssh/sshd_config",
+          "sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config",
+          "sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config" ,
+          "sudo systemctl restart sshd" 
+        ]
+      }
+    }
+
+## 13.
