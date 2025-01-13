@@ -20,8 +20,7 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 **most_recent = true** -> This retrive latest ami in AWS.
 **owners = ["amazon"]** -> AMIs owned by Amazon.
 
-
-   data "aws_ami" "PS-ami-block" {
+     data "aws_ami" "PS-ami-block" {
       most_recent = true
       owners = ["amazon"]
       filter {
