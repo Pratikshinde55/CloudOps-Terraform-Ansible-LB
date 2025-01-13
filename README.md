@@ -23,7 +23,30 @@ My WorkSpace for this project:
 
 ![terraform-apply](https://github.com/user-attachments/assets/cb88e6b5-5382-4eea-850c-edbd2034372a)
 
+## On AWS Console our Infradtucture as code create:
+- All Instances are created
+![Instances](https://github.com/user-attachments/assets/6e5a8552-6a0a-4b30-9ff3-6980b8246067)
 
+- VPC creation
+![VPC](https://github.com/user-attachments/assets/22f2b77f-13e8-4620-9356-292ef70043cb)
+
+- Subnet (Multi)
+![Subnet](https://github.com/user-attachments/assets/718f6f8d-56af-4604-98e6-c27ee844a54e)
+
+- Route Tabel
+![Route-table](https://github.com/user-attachments/assets/e55b682a-b002-44c7-b31c-ea711a8e1828)
+
+- Internate Gateway
+![Gateway](https://github.com/user-attachments/assets/69149357-8c54-428f-aac6-5baf45cca4ef)
+
+
+## On Ansible-Master EC2 Instance on AWS:
+
+- My local laptop ansible-setup.sh file is on ansible master node and also Public_Ip's of BackEnds & FrontEnd EC2 Instances Put on matser node.
+![File-on-ansible](https://github.com/user-attachments/assets/2f2e745f-e047-413d-9cc2-13eb5381bb16)
+
+- when switched to psadmin user we found my GitHub Repo:
+![user-switch](https://github.com/user-attachments/assets/2cbdad95-7dd0-486c-b207-7b19f6650e48)
 
 
 
