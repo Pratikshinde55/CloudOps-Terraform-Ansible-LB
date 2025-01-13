@@ -556,7 +556,8 @@ appends the corresponding public IP address along with Ansible-specific connecti
 **echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | 
 sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC2 instance (PS-EC2-FrontEnd-Block) to the [lb] group in the Ansible inventory file.
 
-These commands configure the Ansible inventory file by adding two groups:
+**These commands configure the Ansible inventory file by adding two groups:**
+
 [web]: Contains all backend EC2 instances.
 [lb]: Contains the frontend EC2 instance
 
@@ -590,16 +591,31 @@ These commands configure the Ansible inventory file by adding two groups:
        ]
     }
 
+## 20. Destroy & Information about Author:
 
+**when = destroy:** This specifies that the command should only run when the resource is destroyed.
+
+**command = "echo ALL set-up/Infrastucture or servers destroyed....> All_Destroy.txt":** The command to be executed. It writes a message to a 
+file named All_Destroy.txt indicating that the setup, infrastructure, or servers have been destroyed. The output is redirected to the file.
+
+    resource "null_resource" "PS-Local-exec-Destroy-block" {
+      provisioner "local-exec" {
+        when    = destroy
+        command = "echo ALL set-up/Infrastucture or servers destroyed....> All_Destroy.txt"
+      }
+    }
+    variable "PSMap" {
+      type = map
+      default = {
+        AuthorName = "Pratik_Shinde" ,
+        IaC = "Terraform" ,
+        Provider_use = "AWS_Cloud" ,
+        Project_Name = "End-to-End Cloud Automation with Terraform, Ansible, and GitHub"  
+      }
+    }
+
+    output "Information_about_Project" {
+      value = var.PSMap
+    }
    
-
-
-
-
-
-
-
-
-
-
-
+   
