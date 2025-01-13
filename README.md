@@ -15,6 +15,7 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 6. Load Balancer(haproxy LB is used as FrontEnd)
 7. Apache webserver(Httpd webserver used as BackEnd for LB)
 
+## Step-1 [Run Terraform file Create all Infrasturecture & Configuration]
 My WorkSpace for this project:
 ![Workspace](https://github.com/user-attachments/assets/02faefa9-95bc-4d30-86c9-f0d10d253d04)
 
@@ -49,7 +50,8 @@ My WorkSpace for this project:
 - Inside my repo all things come that is Playbook-webserver.yml, Playbook-LoadBalancer.yml, pratik.cfg.j2
 ![pratik-repo](https://github.com/user-attachments/assets/7df7fa00-d99e-4f9a-ae91-cd28b336d6e3)
 
-**Just need to update jinja template where add Public_IPs of BackEnd(Only one manual Step)** BackEnd-public-ip file have all public Ips of backends
+## Step-2: [Upadate BackEnd Public_IPs at LB register template on Ansible EC2]
+Just need to update jinja template where add Public_IPs of BackEnd(Only one manual Step) BackEnd-public-ip file have all public Ips of backends
 
      sudo vim pratik.cfg.j2
 
@@ -65,7 +67,8 @@ My WorkSpace for this project:
 ![ansible-cfg](https://github.com/user-attachments/assets/bf4fb9af-9f93-4664-94f7-eb6831f983e0)
 ![ansible-cfg-2](https://github.com/user-attachments/assets/45c2dbe0-f0d7-4798-869a-7f1360d5b281)
 
-**Now Only Need to Run Playbooks Our Entire Configuration of LoadBalncer & WebServer is creates:**
+## Step-3: [Run Ansible_Playbooks both]
+Now Only Need to Run Playbooks Our Entire Configuration of LoadBalncer & WebServer is creates:
 
      ansible-playbook Playbook-webserver.yml
     
@@ -75,14 +78,16 @@ My WorkSpace for this project:
 
 ![LB-playbook](https://github.com/user-attachments/assets/50849a15-b716-4f49-b865-21dc25cbd180)
 
-- On Browser we can access our WebServer by using FrontEnd-EC2 Public_IP which is also download on ansible master on file ForntEnd-public-ip.
+**On Browser we can access our WebServer by using FrontEnd-EC2 Public_IP which is also download on ansible master on file ForntEnd-public-ip:**
 ![Browser-1](https://github.com/user-attachments/assets/1e45e363-1692-4d45-a79e-54eaaa80fc80)
 ![Browser-2](https://github.com/user-attachments/assets/84767a9a-00c2-47d8-b305-688bf9f0d138)
 ![Browser-3](https://github.com/user-attachments/assets/6dfe1006-d7ff-4213-b22c-c85a4f17cf9b)
 
-## Terraform-Code-Explaination(main.tf)[HCL]
 
-##  1.Data Source: aws_ami
+## Terraform-Code-Explaination(main.tf)[HCL]
+Here Entire code explain step by step:
+
+##  1.Data Source: aws_ami [This retrieve AMI for Instance]
 **most_recent = true** -> This retrive latest ami in AWS.
 
 **owners = ["amazon"]** -> AMIs owned by Amazon.
@@ -104,7 +109,7 @@ My WorkSpace for this project:
      }
     }
 
- ## 2.  Resource: aws_vpc
+ ## 2.Resource: aws_vpc [This Create VPC with custom CIDR]
  **cidr_block:** Defines the IP range for the VPC.
 
     resource "aws_vpc" "PS-vpc-block" {
@@ -114,7 +119,7 @@ My WorkSpace for this project:
       }
     }
 
- ## 3. Resource: aws_subnet
+ ## 3.Resource: aws_subnet [This Create Multi-Subnets within VPC]
 **count:** --> The count meta-argument allows the creation of multiple resources based on a list or number. Here, it creates a subnet for each
 CIDR range in var.SubnetRange.
 
@@ -143,7 +148,7 @@ Availability Zone (AZ) using the element function again.
       ]
     }
 
-## 4. Variable Definitions: SubnetRange and AZRange
+## 4.Variables: [ SubnetRange and AZRange This for Multi-Subnet]
 variable block:  This make flexibility to add subet's cidr_block & AZs.
 
     variable "SubnetRange" {
@@ -155,7 +160,7 @@ variable block:  This make flexibility to add subet's cidr_block & AZs.
       default = ["ap-south-1a", "ap-south-1b"]
     }
 
-## 5. Resource: aws_internet_gateway
+## 5.Resource: aws_internet_gateway [This Create Internet Gateway for my VPC]
 **aws_internet_gateway:** Defines an internet gateway to allow communication between instances in the VPC and the outside world (internet).
 
 **vpc_id:** Associate the internet gateway with the created VPC.
@@ -167,7 +172,7 @@ variable block:  This make flexibility to add subet's cidr_block & AZs.
       }
     }
      
-## 6. Resource: aws_route_table
+## 6. Resource: aws_route_table [This Create Route-Table for my VPC]
 **aws_route_table:** Defines a route table for the VPC.
 
 **route:** A route that forwards traffic destined for all IP addresses (0.0.0.0/0) to the internet gateway.
@@ -183,9 +188,7 @@ variable block:  This make flexibility to add subet's cidr_block & AZs.
       }
     }
  
-## 7. Resource: aws_route_table_association
-**aws_route_table_association:** Associates the route table with the subnets.
-
+## 7. Resource: aws_route_table_association [Associates the route table with the subnets]
 **count:** Again used to create associations for each subnet.
 
 **subnet_id:** Links each subnet to the route table.
@@ -199,7 +202,7 @@ variable block:  This make flexibility to add subet's cidr_block & AZs.
       route_table_id = aws_route_table.PS-route-block.id
     }
 
-## 8.  Security Group Resource: aws_security_group
+## 8.Resource: aws_security_group [This create Dyanamic SG for EC2 for Inbound & Outbound rule]
 **aws_security_group:** Creates a security group within the VPC.
 
 **ingress and egress:** Define the inbound and outbound rules for traffic.
@@ -233,7 +236,7 @@ variable block:  This make flexibility to add subet's cidr_block & AZs.
       ]
     }
    
-## 9. EC2 Instances: aws_instance
+## 9.Resource: aws_instance [This Create Multi-EC2 for BackEnd]
 **count = 3:** Launches 3 instances (one for each count index).
 
 **subnet_id:** Assigns each EC2 instance to a subnet using a round-robin assignment via the modulo operator (count.index % 2).
@@ -261,7 +264,7 @@ public IP address upon creation.
       ]
     }
 
-## 10. null_resource: PS-NULL-Backend-ssh-block
+## 10.Resource: null_resource [This Configure SSH Settings on ALL BackEnds EC2]
 Here, the **count** is set to the number of backend EC2 instances, aws_instance.PS-EC2-Backend-block.
 So, if 3 backend instances are created, count will be 3, and Terraform will run this null_resource block 3 times.
 
@@ -322,7 +325,7 @@ This enables password authentication for SSH, ensuring that users can log in usi
       }
     } 
 
-## 11. Resource:aws_instance for PS-EC2-FrontEnd-Block
+## 11.Resource: aws_instance [This Create EC2 For FrontEnd]
 **subnet_id:** Specifies the subnet in which to launch the EC2 instance.
 
 **aws_subnet.PS-Subnet-block.*.id** is a list of subnet IDs, retrieved dynamically from aws_subnet.PS-Subnet-block.
@@ -351,7 +354,7 @@ In a multi-subnet setup, this ensures the instance is placed in the first availa
       ]
     }
 
-## 12. Resource: null_resource for PS-Null-Frontend-ssh-Block
+## 12.Resource: null_resource [This Configure SSH on FrontEnd]
 The null_resource block provided is used to configure SSH access on the Frontend EC2 instance after it has been created. 
 This block ensures that the necessary SSH configurations are applied to the instance.
 
@@ -376,7 +379,7 @@ This block ensures that the necessary SSH configurations are applied to the inst
       }
     }
 
-## 13. Resource: aws_instance for PS-EC2-Ansible-Master-Block
+## 13.Resource: aws_instance [This Create EC2 Instance for Ansible-Master]
 This EC2 instance can be used as the Ansible Master Node.
 
     resource "aws_instance" "PS-EC2-Ansible-Master-Block" {
@@ -393,7 +396,7 @@ This EC2 instance can be used as the Ansible Master Node.
       }
     }
 
-## 14. Resource: null_resource for PS-Null-Ansible-Master-ssh-Block
+## 14.Resource: null_resource [This resource Configure SSH Setup on Ansible-Master EC2]
 This null_resource is use to configuration of SSH on Ansible-Master node.
 
     resource "null_resource" "PS-Null-Ansible-Master-ssh-Block" {
@@ -416,7 +419,7 @@ This null_resource is use to configuration of SSH on Ansible-Master node.
       }
     }
 
-## 15. Resource: null_resource for PS-Null-Ansible-Master-Block-SAVE-BackEndIP
+## 15.Resource: null_resource [This resource Save BackEnd EC2 Public_IPs dynamically on Ansible-Master]
 This null_resource dynamically store Public_IP's of all Backends EC2 in ansible master node at location /home/ec2-user with file named as "BackEnd-public-ip".
 
       join("\n", [
@@ -460,7 +463,7 @@ For each instance, it appends the string 'pratik ${instance.tags["Name"]} ${inst
       ]
     }
   
-## 16. Resource: null_resource for PS-Null-Ansible-Master-Block-SAVE-FrontEndIP
+## 16.Resource: null_resource [This resource Save FrontEnd EC2 Public_IP dynamically on Ansible-Master]
 This null_resource dynamically store Public_IP of FrontEnd EC2 in ansible master node at location /home/ec2-user with file named as "FrontEnd-public-ip".
 
     join("\n", [
@@ -511,7 +514,7 @@ The **tolist([...])** converts the list of EC2 instances into a list that can be
       value = aws_instance.PS-EC2-FrontEnd-Block.public_ip
     }  
 
-## 17. Resource: null_resource for PS-Null-Ansible-Installation-Block
+## 17.Resource: null_resource [This Resource copy file from local to target & then execute]
 This null_resource copy ansible-setup.sh script file on Ansible-MAster EC2 & execute.
 
 **provisioner "file" Block**
@@ -564,7 +567,7 @@ sudo /home/ec2-user/ansible-setup.sh: This command runs the ansible-setup.sh scr
       }
     } 
 
-## 18. Resource: null_resource for PS-Null-Ansible-Master-SetAnsible-Config
+## 18.Resource: null_resource [This Resource Configure/Set Anible config file on Ansible-Master EC2]
 This null_resource use for settings ansible config file
 
 **sudo sed -i 's/^#become=True/become=True/' /etc/ansible/ansible.cfg** -->>  This command uncomment the become=True line and enables privilege
@@ -606,7 +609,7 @@ approve each new key.
        ]
     }
 
-## 19. Resource: null_resource for PS-Null-Ansible-Master-Block-Inventory-setup
+## 19.Resource: null_resource [This Create Dynamic Inventory On Ansible-Master-EC2]
 This null_resource set Inventory dynamically in ansible master.
 
 **echo '[web]' | sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the [web] group to the Ansible inventory file (/etc/ansible/hosts).
@@ -657,7 +660,7 @@ sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC
        ]
     }
 
-## 20. Destroy & Information about Author:
+## 20. Destroy & Information about Author:[This save file on local machine when terraform destroy cmd use]
 
 **when = destroy:** This specifies that the command should only run when the resource is destroyed.
 
@@ -683,5 +686,4 @@ file named All_Destroy.txt indicating that the setup, infrastructure, or servers
     output "Information_about_Project" {
       value = var.PSMap
     }
-   
-   
+ 
