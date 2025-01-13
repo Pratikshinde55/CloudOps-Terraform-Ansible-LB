@@ -582,7 +582,8 @@ These commands configure the Ansible inventory file by adding two groups:
           "echo '[lb]' | sudo tee -a /etc/ansible/hosts > /dev/null",
 
           # Add the frontend EC2 instance to the 'lb' group
-          "echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a /etc/ansible/hosts > /dev/null"
+          "echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a 
+           /etc/ansible/hosts > /dev/null"
           ]
         }
    
