@@ -584,7 +584,7 @@ sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC
           # Add the frontend EC2 instance to the 'lb' group
           "echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a /etc/ansible/hosts > /dev/null"
           ]
-      }
+        }
    
        depends_on = [
          aws_instance.PS-EC2-Backend-block,
