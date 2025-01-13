@@ -406,7 +406,7 @@ resource "null_resource" "PS-Null-Ansible-Master-SetAnsible-Config" {
       "sudo sed -i 's/^#become_ask_pass=False/become_ask_pass=False/' /etc/ansible/ansible.cfg",
       "sudo sed -i 's/^#become_method=sudo/become_method=sudo/' /etc/ansible/ansible.cfg",
       "sudo sed -i 's/^#become_user=root/become_user=root/' /etc/ansible/ansible.cfg",
-      "sudo sed -i 's/^#host_key_checking=False/host_key_checking=False/' /etc/ansible/ansible.cfg"
+      "sudo sed -i 's/^#host_key_checking = False/host_key_checking = False/' /etc/ansible/ansible.cfg" 
     ]
   }
 
