@@ -15,6 +15,18 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 6. Load Balancer(haproxy LB is used as FrontEnd)
 7. Apache webserver(Httpd webserver used as BackEnd for LB)
 
+My WorkSpace for this project:
+![Workspace](https://github.com/user-attachments/assets/02faefa9-95bc-4d30-86c9-f0d10d253d04)
+
+
+  terraform apply --auto-approve
+
+![terraform-apply](https://github.com/user-attachments/assets/cb88e6b5-5382-4eea-850c-edbd2034372a
+
+
+
+
+
 
 ##  1.Data Source: aws_ami
 **most_recent = true** -> This retrive latest ami in AWS.
