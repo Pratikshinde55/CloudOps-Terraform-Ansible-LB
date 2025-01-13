@@ -14,3 +14,27 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 5. Ansible(using Terraform dynamically create Inventory, set Ansible config file)
 6. Load Balancer(haproxy LB is used as FrontEnd)
 7. Apache webserver(Httpd webserver used as BackEnd for LB)
+
+
+##  Data Source: aws_ami
+**most_recent = true** -> This retrive latest ami in AWS.
+**owners = ["amazon"]** -> AMIs owned by Amazon.
+
+   data "aws_ami" "PS-ami-block" {
+      most_recent = true
+      owners = ["amazon"]
+      filter {
+        name = "name"
+        values = ["amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2"]
+      }
+      filter {
+        name = "root-device-type"
+        values = ["ebs"]
+      }
+      filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+     }
+    }
+
+    
