@@ -557,8 +557,8 @@ appends the corresponding public IP address along with Ansible-specific connecti
 sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC2 instance (PS-EC2-FrontEnd-Block) to the [lb] group in the Ansible inventory file.
 
 These commands configure the Ansible inventory file by adding two groups:
-1. [web]: Contains all backend EC2 instances.
-2. [lb]: Contains the frontend EC2 instance
+[web]: Contains all backend EC2 instances.
+[lb]: Contains the frontend EC2 instance
 
     resource "null_resource" "PS-Null-Ansible-Master-Block-Inventory-setup" {
       connection {
