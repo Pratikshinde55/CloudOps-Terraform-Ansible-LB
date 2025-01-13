@@ -46,7 +46,15 @@ My WorkSpace for this project:
 - when switched to psadmin user we found my GitHub Repo:
 ![user-switch](https://github.com/user-attachments/assets/2cbdad95-7dd0-486c-b207-7b19f6650e48)
 
-- 
+- Inside my repo all things come that is Playbook-webserver.yml, Playbook-LoadBalancer.yml, pratik.cfg.j2
+![pratik-repo](https://github.com/user-attachments/assets/7df7fa00-d99e-4f9a-ae91-cd28b336d6e3)
+
+**Just need to update jinja template where add Public_IPs of BackEnd** BackEnd-public-ip file have all public Ips of backends
+
+   sudo vim pratik.cfg.j2
+
+![pratik.cfg.j2](https://github.com/user-attachments/assets/309a9252-6943-42c1-9d3e-01aa9f22ebbe)
+
 
 
 
