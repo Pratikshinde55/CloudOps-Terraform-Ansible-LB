@@ -570,15 +570,18 @@ These commands configure the Ansible inventory file by adding two groups:
       provisioner "remote-exec" {
         inline = [
           "echo '[web]' | sudo tee -a /etc/ansible/hosts > /dev/null",
+   
            join("\n", [
              for instance in aws_instance.PS-EC2-Backend-block :
              "echo '${instance.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a /etc/ansible/hosts > /dev/null"
            ]),
           "echo '[lb]' | sudo tee -a /etc/ansible/hosts > /dev/null",
+   
           "echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a 
            /etc/ansible/hosts > /dev/null"
           ]
         }
+   
        depends_on = [
          aws_instance.PS-EC2-Backend-block,
          aws_instance.PS-EC2-FrontEnd-Block,
