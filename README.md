@@ -16,7 +16,7 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 7. Apache webserver(Httpd webserver used as BackEnd for LB)
 
 
-##  Data Source: aws_ami
+##  1.Data Source: aws_ami
 **most_recent = true** -> This retrive latest ami in AWS.
 **owners = ["amazon"]** -> AMIs owned by Amazon.
 
@@ -37,4 +37,13 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
      }
     }
 
-    
+ ## 2.  Resource: aws_vpc
+ **cidr_block:** Defines the IP range for the VPC.
+
+    resource "aws_vpc" "PS-vpc-block" {
+      cidr_block = "10.0.0.0/16"
+      tags = {
+        Name = "TF-Pratik-vpc"
+      }
+    }
+ 
