@@ -15,6 +15,12 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 6. Load Balancer(haproxy LB is used as FrontEnd)
 7. Apache webserver(Httpd webserver used as BackEnd for LB)
 
+## Full Automation:
+Only Follwing three manual steps otherwise all things are Automatic
+1. Step-1 (Run terraform file)
+2. Step-2 (Add BackEnd Public_IPs at pratik.cfg.j2 template)
+3. Step-3 (Run Ansible-playbooks of WebServer & LoadBalancer)
+
 ## Step-1 [Run Terraform file Create all Infrasturecture & Configuration]
 My WorkSpace for this project:
 ![Workspace](https://github.com/user-attachments/assets/02faefa9-95bc-4d30-86c9-f0d10d253d04)
