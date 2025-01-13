@@ -540,7 +540,61 @@ approve each new key.
        ]
     }
 
-## 19.
+## 19. Resource: null_resource for PS-Null-Ansible-Master-Block-Inventory-setup
+This null_resource set Inventory dynamically in ansible master.
+
+**echo '[web]' | sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the [web] group to the Ansible inventory file (/etc/ansible/hosts).
+The **tee** command appends the string [web] to the /etc/ansible/hosts file (without outputting it to the console due to the > /dev/null).
+
+**join("\n", [...]):**  This block dynamically adds all the backend EC2 instances to the [web] group in the Ansible inventory file.
+
+The for instance in aws_instance.PS-EC2-Backend-block loop goes through each backend EC2 instance (PS-EC2-Backend-block) and 
+appends the corresponding public IP address along with Ansible-specific connection details (ansible_user, ansible_password, and ansible_connection).
+
+**echo '[lb]' | sudo tee -a /etc/ansible/hosts > /dev/null:** This command adds the [lb] group to the Ansible inventory file (/etc/ansible/hosts).
+
+**echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | 
+sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC2 instance (PS-EC2-FrontEnd-Block) to the [lb] group in the Ansible inventory file.
+
+- these commands configure the Ansible inventory file by adding two groups:
+1. [web]: Contains all backend EC2 instances.
+2. [lb]: Contains the frontend EC2 instance
+
+    resource "null_resource" "PS-Null-Ansible-Master-Block-Inventory-setup" {
+      connection {
+        type        = "ssh"
+        user        = "ec2-user"
+        private_key = file("F:/psTerraform-key.pem")
+        host        = aws_instance.PS-EC2-Ansible-Master-Block.public_ip
+      }
+      provisioner "remote-exec" {
+        inline = [
+          # Add web group name in Inventory
+          "echo '[web]' | sudo tee -a /etc/ansible/hosts > /dev/null",
+
+          # Add backend EC2 instances to the 'web' group
+          join("\n", [
+            for instance in aws_instance.PS-EC2-Backend-block :
+              "echo '${instance.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a /etc/ansible/hosts > /dev/null"
+          ]),
+
+          # Add the lb host Group Name
+          "echo '[lb]' | sudo tee -a /etc/ansible/hosts > /dev/null",
+
+          # Add the frontend EC2 instance to the 'lb' group
+          "echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | sudo tee -a /etc/ansible/hosts > /dev/null"
+          ]
+      }
+      depends_on = [
+   
+        aws_instance.PS-EC2-Backend-block,
+        aws_instance.PS-EC2-FrontEnd-Block,
+        aws_instance.PS-EC2-Ansible-Master-Block , 
+        null_resource.PS-Null-Ansible-Installation-Block
+      ]
+    }
+
+
    
 
 
