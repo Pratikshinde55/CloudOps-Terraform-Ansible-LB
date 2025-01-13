@@ -556,7 +556,7 @@ appends the corresponding public IP address along with Ansible-specific connecti
 **echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | 
 sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC2 instance (PS-EC2-FrontEnd-Block) to the [lb] group in the Ansible inventory file.
 
-- these commands configure the Ansible inventory file by adding two groups:
+These commands configure the Ansible inventory file by adding two groups:
 1. [web]: Contains all backend EC2 instances.
 2. [lb]: Contains the frontend EC2 instance
 
@@ -592,7 +592,7 @@ sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC
          aws_instance.PS-EC2-Ansible-Master-Block , 
          null_resource.PS-Null-Ansible-Installation-Block
        ]
-       }
+    }
 
 
    
