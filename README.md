@@ -167,5 +167,93 @@ variable block:  This make flexibility to add subet's cidr_block & AZs.
       ]
     }
    
+## 9. EC2 Instances: aws_instance
+**count = 3:** Launches 3 instances (one for each count index).
 
+**subnet_id:** Assigns each EC2 instance to a subnet using a round-robin assignment via the modulo operator (count.index % 2).
 
+**count.index % 2**: This is for Round Robin algorithms its go to subnet1 then subnet2 then subnet1 like this stucture.
+
+**associate_public_ip_address = true** --> This argument used in EC2 instance launched in a VPC subnet should automatically be assigned a 
+public IP address upon creation.
+
+    resource "aws_instance" "PS-EC2-Backend-block" {
+      ami = data.aws_ami.PS-ami-block.id
+      key_name = "psTerraform-key"
+      instance_type = "t2.micro"
+      vpc_security_group_ids = [aws_security_group.PS-SG-block.id]
+      subnet_id = element(aws_subnet.PS-Subnet-block.*.id , count.index % 2)
+      associate_public_ip_address = true
+      count = 3
+      tags = {
+        Name = "Pratik-TF-${var.InstanceName[count.index]}"
+      }
+      depends_on = [
+        aws_vpc.PS-vpc-block,
+        aws_subnet.PS-Subnet-block,
+        aws_security_group.PS-SG-block
+      ]
+    }
+
+## 10. null_resource: PS-NULL-Backend-ssh-block
+Here, the **count** is set to the number of backend EC2 instances, aws_instance.PS-EC2-Backend-block.
+So, if 3 backend instances are created, count will be 3, and Terraform will run this null_resource block 3 times.
+
+**host = aws_instance.PS-EC2-Backend-block[count.index].public_ip:** The public IP address of the backend EC2 instance. 
+count.index ensures that the null_resource connects to the correct instance.
+
+**sudo useradd pratik:** Creates a new user named pratik on the EC2 instance with sudo (superuser) privileges.
+
+**echo 'pratik:1234' | sudo chpasswd:** Sets the password for the newly created user pratik to 1234. The chpasswd command is used to change the password.
+
+**echo 'pratik ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers:** This grants pratik user root privileges without requiring a password by 
+modifying the /etc/sudoers file. This is useful for automation because it allows the pratik user to run commands as root without needing to enter a password.
+
+**sudo sed -i '/^PasswordAuthentication no/d' /etc/ssh/sshd_config:** This command modifies the SSH server configuration (/etc/ssh/sshd_config)
+by removing any line that disables password authentication. 
+This is important because it ensures the system will accept password authentication for SSH, which could otherwise be disabled by default.
+
+**sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config:** This command allows root login via SSH by changing the
+PermitRootLogin setting to yes.
+
+**sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config:**
+This enables password authentication for SSH, ensuring that users can log in using a password (in this case, the password for pratik)
+
+**sudo systemctl restart sshd:** This restarts the SSH service to apply the changes made to the SSH configuration.
+
+    resource "null_resource" "PS-NULL-Backend-ssh-block" {
+      # length for BackEnd resource
+      count = length(aws_instance.PS-EC2-Backend-block)
+
+      connection {
+        type = "ssh"
+        user = "ec2-user"
+        private_key = file("F:/psTerraform-key.pem")
+        # Here use count.index because i creates 3 EC2 for BackEnd
+        host = aws_instance.PS-EC2-Backend-block[count.index].public_ip
+      }
+      provisioner "remote-exec" {
+        inline = [
+          # Create the pratik user
+          "sudo useradd pratik",
+
+          # Set the password for the user
+          "echo 'pratik:1234' | sudo chpasswd",
+
+          # Grant root privileges without a password for pratik
+          "echo 'pratik ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers",
+
+          # Remove the line "PasswordAuthentication no" if it exists
+          "sudo sed -i '/^PasswordAuthentication no/d' /etc/ssh/sshd_config",
+
+           # Modify SSH config to allow root login and password authentication
+           "sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config",
+           "sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config",
+
+           # Restart SSH service to apply changes
+           "sudo systemctl restart sshd"
+         ]
+      }
+    } 
+
+## 11.
