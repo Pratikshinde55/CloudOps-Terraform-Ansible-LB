@@ -55,8 +55,32 @@ My WorkSpace for this project:
 
 ![pratik.cfg.j2](https://github.com/user-attachments/assets/309a9252-6943-42c1-9d3e-01aa9f22ebbe)
 
+- Ansible a downloaded by terraform using ansible-setup.sh file & also Git Install and clone my entire repo.
+![ansible--version](https://github.com/user-attachments/assets/2374cbba-2113-4c5c-a089-b68f9e458fbc)
 
+- Dynamic Inventory Set By Automation:(/etc/ansible/hosts)
+![Inventory](https://github.com/user-attachments/assets/8f3d9c72-a4a7-4eb1-884f-6357791e0016)
 
+- Ansible Config file set by Automation using Terraform remote-exec provisioner(/etc/ansible/ansible.cfg)
+![ansible-cfg](https://github.com/user-attachments/assets/bf4fb9af-9f93-4664-94f7-eb6831f983e0)
+![ansible-cfg-2](https://github.com/user-attachments/assets/66095492-88ad-4ca1-b89a-4a43748cd6a9)
+
+**Now Only Need to Run Playbooks Our Entire Configuration of LoadBalncer & WebServer is creates:**
+
+     ansible-playbook Playbook-webserver.yml
+    
+![webserver-playbook](https://github.com/user-attachments/assets/44e02c7f-7c68-4a5f-a9f1-ef2bb31670aa)
+
+      ansible-playbook Playbook-LoadBalancer.yml
+
+![LB-playbook](https://github.com/user-attachments/assets/50849a15-b716-4f49-b865-21dc25cbd180)
+
+- On Browser we can access our WebServer by using FrontEnd-EC2 Public_IP which is also download on ansible master on file ForntEnd-public-ip.
+![Browser-1](https://github.com/user-attachments/assets/1e45e363-1692-4d45-a79e-54eaaa80fc80)
+![Browser-2](https://github.com/user-attachments/assets/84767a9a-00c2-47d8-b305-688bf9f0d138)
+![Browser-3](https://github.com/user-attachments/assets/6dfe1006-d7ff-4213-b22c-c85a4f17cf9b)
+
+## Terraform-Code-Explaination(main.tf)[HCL]
 
 ##  1.Data Source: aws_ami
 **most_recent = true** -> This retrive latest ami in AWS.
