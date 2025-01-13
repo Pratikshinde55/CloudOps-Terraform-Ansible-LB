@@ -63,7 +63,7 @@ My WorkSpace for this project:
 
 - Ansible Config file set by Automation using Terraform remote-exec provisioner(/etc/ansible/ansible.cfg)
 ![ansible-cfg](https://github.com/user-attachments/assets/bf4fb9af-9f93-4664-94f7-eb6831f983e0)
-![ansible-cfg-2](https://github.com/user-attachments/assets/66095492-88ad-4ca1-b89a-4a43748cd6a9)
+![ansible-cfg-2](https://github.com/user-attachments/assets/45c2dbe0-f0d7-4798-869a-7f1360d5b281)
 
 **Now Only Need to Run Playbooks Our Entire Configuration of LoadBalncer & WebServer is creates:**
 
