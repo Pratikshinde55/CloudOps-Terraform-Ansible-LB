@@ -18,6 +18,7 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 
 ##  1.Data Source: aws_ami
 **most_recent = true** -> This retrive latest ami in AWS.
+
 **owners = ["amazon"]** -> AMIs owned by Amazon.
 
     data "aws_ami" "PS-ami-block" {
@@ -45,5 +46,33 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
       tags = {
         Name = "TF-Pratik-vpc"
       }
+    }
+
+ ## 3. Resource: aws_subnet
+**count:** --> The count meta-argument allows the creation of multiple resources based on a list or number. Here, it creates a subnet for each
+CIDR range in var.SubnetRange.
+
+**vpc_id:** Links the subnet to the previously created VPC.
+
+**cidr_block:** The CIDR block for the subnet, dynamically assigned from the SubnetRange variable.The IP address range for each subnet
+is dynamically set by the element function
+
+**availability_zone:** Defines the availability zone for the subnet, chosen from the AZRange variable. This assigns the subnet to a specific 
+Availability Zone (AZ) using the element function again.
+
+**map_public_ip_on_launch:** Ensures that instances launched in this subnet will automatically receive a public IP.
+
+    resource "aws_subnet" "PS-Subnet-block" {
+      count = length(var.SubnetRange)
+      vpc_id = aws_vpc.PS-vpc-block.id
+      cidr_block = element(var.SubnetRange, count.index)
+      availability_zone = element(var.AZRange, count.index)
+      map_public_ip_on_launch = true
+      tags = {
+        Name = "TF-Pratik-Subnet"
+      }
+      depends_on = [
+        aws_vpc.PS-vpc-block
+      ]
     }
  
