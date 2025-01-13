@@ -310,4 +310,21 @@ This block ensures that the necessary SSH configurations are applied to the inst
       }
     }
 
-## 13.
+## 13. Resource: aws_instance for PS-EC2-Ansible-Master-Block
+This EC2 instance can be used as the Ansible Master Node.
+
+    resource "aws_instance" "PS-EC2-Ansible-Master-Block" {
+      ami = data.aws_ami.PS-ami-block.id
+      instance_type = "t2.micro"
+      key_name = "psTerraform-key"
+      vpc_security_group_ids = [aws_security_group.PS-SG-block.id]
+  
+      subnet_id = element(aws_subnet.PS-Subnet-block.*.id , 0)
+      associate_public_ip_address = true
+
+      tags = {
+       Name = "Pratik-TF-Ansible-Master"
+      }
+    }
+
+## 14. 
