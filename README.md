@@ -18,12 +18,11 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 My WorkSpace for this project:
 ![Workspace](https://github.com/user-attachments/assets/02faefa9-95bc-4d30-86c9-f0d10d253d04)
 
-
   terraform apply --auto-approve
 
 ![terraform-apply](https://github.com/user-attachments/assets/cb88e6b5-5382-4eea-850c-edbd2034372a)
 
-## On AWS Console our Infradtucture as code create:
+## On AWS Console our Infrastructure as code create:
 - All Instances are created
 ![Instances](https://github.com/user-attachments/assets/6e5a8552-6a0a-4b30-9ff3-6980b8246067)
 
@@ -39,7 +38,6 @@ My WorkSpace for this project:
 - Internate Gateway
 ![Gateway](https://github.com/user-attachments/assets/69149357-8c54-428f-aac6-5baf45cca4ef)
 
-
 ## On Ansible-Master EC2 Instance on AWS:
 
 - My local laptop ansible-setup.sh file is on ansible master node and also Public_Ip's of BackEnds & FrontEnd EC2 Instances Put on matser node.
@@ -48,6 +46,7 @@ My WorkSpace for this project:
 - when switched to psadmin user we found my GitHub Repo:
 ![user-switch](https://github.com/user-attachments/assets/2cbdad95-7dd0-486c-b207-7b19f6650e48)
 
+- 
 
 
 
