@@ -592,7 +592,7 @@ sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC
          aws_instance.PS-EC2-Ansible-Master-Block , 
          null_resource.PS-Null-Ansible-Installation-Block
        ]
-    }
+      }
 
 
    
