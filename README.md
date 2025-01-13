@@ -586,13 +586,12 @@ sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC
           ]
       }
    
-      depends_on = [
-
-       aws_instance.PS-EC2-Backend-block,
-        aws_instance.PS-EC2-FrontEnd-Block,
-        aws_instance.PS-EC2-Ansible-Master-Block , 
-        null_resource.PS-Null-Ansible-Installation-Block
-      ]
+       depends_on = [
+         aws_instance.PS-EC2-Backend-block,
+         aws_instance.PS-EC2-FrontEnd-Block,
+         aws_instance.PS-EC2-Ansible-Master-Block , 
+         null_resource.PS-Null-Ansible-Installation-Block
+       ]
     }
 
 
