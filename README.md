@@ -693,3 +693,9 @@ file named All_Destroy.txt indicating that the setup, infrastructure, or servers
       value = var.PSMap
     }
  
+## For Reference: 
+- Ansible setup on AWS Cloud Link:
+[Ansible-setup-onAWS](https://github.com/Pratikshinde55/Ansible-setup-onAWS.git)
+
+- Configuration of Load balancer & webserver using Ansible Automation:
+[Ansible-loadBalancer-webserver-configuration](https://github.com/Pratikshinde55/Ansible-loadBalancer-webserver-configuration.git)
