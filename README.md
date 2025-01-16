@@ -29,8 +29,10 @@ Only Follwing three manual steps otherwise all things are Automatic
 5. Provisioner "file"
 6. Provisioner "local-exec"
 7. Join
-8. map
-9. count-count.index
+8. map(variable)
+9. count(Meta Argument)
+10. depends_on(Meta Argument)
+11. tolist
 
 ## Step-1 [Run Terraform file Create all Infrastructure & Configuration]
 My WorkSpace for this project:
