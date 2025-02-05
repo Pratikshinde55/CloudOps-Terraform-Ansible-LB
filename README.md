@@ -132,9 +132,9 @@ Here Entire code explain step by step:
  **cidr_block:** Defines the IP range for the VPC.
 
  #### Understanding the VPC CIDR (/16) [Formula= 22^(32−subnet_mask)]
- Total IPs:- 2^(32−16) = 2^16 = 65,536 IPs
+ Total IPs:- `2^(32−16) = 2^16 = 65,536` IPs
 
- For the VPC (10.0.0.0/16), there is no need to subtract 5 IPs because AWS does not reserve IPs at the VPC level, only at the subnet level.
+ For the VPC (`10.0.0.0/16`), there is no need to subtract 5 IPs because AWS does not reserve IPs at the VPC level, only at the subnet level.
 
     resource "aws_vpc" "PS-vpc-block" {
       cidr_block = "10.0.0.0/16"
@@ -143,19 +143,14 @@ Here Entire code explain step by step:
       }
     }
 
- ## 3.Resource: aws_subnet [This Create Multi-Subnets within VPC]
-**count:** --> The count meta-argument allows the creation of multiple resources based on a list or number. Here, it creates a subnet for each
-CIDR range in var.SubnetRange.
+ ## 3.Resource: aws_subnet [This Create Multi-Subnets within VPC] 
+ - **count:**  The count meta-argument allows the creation of multiple resources based on a list or number. Here, it creates a subnet for each CIDR range in var.SubnetRange.
+ - **vpc_id:** Links the subnet to the previously created VPC.
+ - **cidr_block:** The CIDR block for the subnet, dynamically assigned from the SubnetRange variable.The IP address range for each subnet is dynamically set by the element function
+ - **availability_zone:** Defines the availability zone for the subnet, chosen from the AZRange variable. This assigns the subnet to a specific Availability Zone (AZ) using the element function again.
+ - **map_public_ip_on_launch:** Ensures that instances launched in this subnet will automatically receive a public IP.
 
-**vpc_id:** Links the subnet to the previously created VPC.
-
-**cidr_block:** The CIDR block for the subnet, dynamically assigned from the SubnetRange variable.The IP address range for each subnet
-is dynamically set by the element function
-
-**availability_zone:** Defines the availability zone for the subnet, chosen from the AZRange variable. This assigns the subnet to a specific 
-Availability Zone (AZ) using the element function again.
-
-**map_public_ip_on_launch:** Ensures that instances launched in this subnet will automatically receive a public IP.
+ Code:-
 
     resource "aws_subnet" "PS-Subnet-block" {
     
