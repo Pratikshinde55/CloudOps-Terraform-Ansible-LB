@@ -107,9 +107,10 @@ Now Only Need to Run Playbooks Our Entire Configuration of LoadBalncer & WebServ
 Here Entire code explain step by step:
 
 ##  1.Data Source: aws_ami [This retrieve AMI for Instance]
-**most_recent = true** -> This retrive latest ami in AWS.
+- **most_recent = true** -> This retrive latest ami in AWS.
+- **owners = ["amazon"]** -> AMIs owned by Amazon.
 
-**owners = ["amazon"]** -> AMIs owned by Amazon.
+Code:-
 
     data "aws_ami" "PS-ami-block" {
       most_recent = true
@@ -197,6 +198,7 @@ AWS reserves **5 IPs per subnet**:
 | Subnet 2 | `10.0.2.0/24` | 256 | 5 | **251** |
 | **Total**  | **`/24 + /24`** | **512** | **10** | **502** |
 
+Code:-
 
     variable "SubnetRange" {
       type = list(string)
@@ -208,9 +210,10 @@ AWS reserves **5 IPs per subnet**:
     }
 
 ## 5.Resource: aws_internet_gateway [This Create Internet Gateway for my VPC]
-**aws_internet_gateway:** Defines an internet gateway to allow communication between instances in the VPC and the outside world (internet).
+- **aws_internet_gateway:** Defines an internet gateway to allow communication between instances in the VPC and the outside world (internet).
+- **vpc_id:** Associate the internet gateway with the created VPC.
 
-**vpc_id:** Associate the internet gateway with the created VPC.
+Code:-
 
     resource "aws_internet_gateway" "PS-Gateway-block" {
       vpc_id = aws_vpc.PS-vpc-block.id
@@ -220,9 +223,10 @@ AWS reserves **5 IPs per subnet**:
     }
      
 ## 6. Resource: aws_route_table [This Create Route-Table for my VPC]
-**aws_route_table:** Defines a route table for the VPC.
+- **aws_route_table:** Defines a route table for the VPC.
+- **route:** A route that forwards traffic destined for all IP addresses (0.0.0.0/0) to the internet gateway.
 
-**route:** A route that forwards traffic destined for all IP addresses (0.0.0.0/0) to the internet gateway.
+Code:-
 
     resource "aws_route_table" "PS-route-block" {
       vpc_id = aws_vpc.PS-vpc-block.id
@@ -236,11 +240,11 @@ AWS reserves **5 IPs per subnet**:
     }
  
 ## 7. Resource: aws_route_table_association [Associates the route table with the subnets]
-**count:** Again used to create associations for each subnet.
+- **count:** Again used to create associations for each subnet.
+- **subnet_id:** Links each subnet to the route table.
+- **route_table_id:** Associates the route table.
 
-**subnet_id:** Links each subnet to the route table.
-
-**route_table_id:** Associates the route table.
+Code:-
 
     resource "aws_route_table_association" "PS-T_asso-block" {
     
@@ -250,11 +254,11 @@ AWS reserves **5 IPs per subnet**:
     }
 
 ## 8.Resource: aws_security_group [This create Dyanamic SG for EC2 for Inbound & Outbound rule]
-**aws_security_group:** Creates a security group within the VPC.
+- **aws_security_group:** Creates a security group within the VPC.
+- **ingress and egress:** Define the inbound and outbound rules for traffic.
+- **dynamic block** Here used for dyanmic allow port no with variable var.Allow-traffic, 
 
-**ingress and egress:** Define the inbound and outbound rules for traffic.
-
-**dynamic block** Here used for dyanmic allow port no with variable var.Allow-traffic, 
+Code:-
 
     resource "aws_security_group" "PS-SG-block" {
       vpc_id = aws_vpc.PS-vpc-block.id
@@ -284,14 +288,12 @@ AWS reserves **5 IPs per subnet**:
     }
    
 ## 9.Resource: aws_instance [This Create Multi-EC2 for BackEnd]
-**count = 3:** Launches 3 instances (one for each count index).
+- **count = 3:** Launches 3 instances (one for each count index).
+- **subnet_id:** Assigns each EC2 instance to a subnet using a round-robin assignment via the modulo operator (count.index % 2).
+- **count.index % 2**: This is for Round Robin algorithms its go to subnet1 then subnet2 then subnet1 like this stucture.
+- **associate_public_ip_address = true** --> This argument used in EC2 instance launched in a VPC subnet should automatically be assigned a public IP address upon creation.
 
-**subnet_id:** Assigns each EC2 instance to a subnet using a round-robin assignment via the modulo operator (count.index % 2).
-
-**count.index % 2**: This is for Round Robin algorithms its go to subnet1 then subnet2 then subnet1 like this stucture.
-
-**associate_public_ip_address = true** --> This argument used in EC2 instance launched in a VPC subnet should automatically be assigned a 
-public IP address upon creation.
+Code:-
 
     resource "aws_instance" "PS-EC2-Backend-block" {
       ami = data.aws_ami.PS-ami-block.id
@@ -366,14 +368,13 @@ Code:-
     } 
 
 ## 11.Resource: aws_instance [This Create EC2 For FrontEnd]
-**subnet_id:** Specifies the subnet in which to launch the EC2 instance.
+- **subnet_id:** Specifies the subnet in which to launch the EC2 instance.
+- **aws_subnet.PS-Subnet-block.*.id** is a list of subnet IDs, retrieved dynamically from aws_subnet.PS-Subnet-block.
+- **element(... , 0):** This function selects the first subnet ID (EX, 0 index) from the list of available subnets.In a multi-subnet setup,
+this ensures the instance is placed in the first available subnet in the list.
+- **associate_public_ip_address:** By setting this to true, it ensures that the EC2 instance is assigned a public IP address upon creation.
 
-**aws_subnet.PS-Subnet-block.*.id** is a list of subnet IDs, retrieved dynamically from aws_subnet.PS-Subnet-block.
-
-**element(... , 0):** This function selects the first subnet ID (EX, 0 index) from the list of available subnets.
-In a multi-subnet setup, this ensures the instance is placed in the first available subnet in the list.
-
-**associate_public_ip_address:** By setting this to true, it ensures that the EC2 instance is assigned a public IP address upon creation.
+Code:-
 
     resource "aws_instance" "PS-EC2-FrontEnd-Block" {
       ami = data.aws_ami.PS-ami-block.id
@@ -470,13 +471,12 @@ This null_resource dynamically store Public_IP's of all Backends EC2 in ansible 
 This uses a for loop to iterate through all the EC2 instances defined in the aws_instance.PS-EC2-Backend-block resource, 
 which represents multiple EC2 backend instances.
 
-For each instance, it appends the string 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' to the BackEnd-public-ip file.
+- For each instance, it appends the string 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' to the BackEnd-public-ip file.
+- **${instance.tags["Name"]}:** Retrieves the Name tag of the backend instance.
+- **${instance.public_ip}:** Retrieves the public IP address of the backend instance.
+- **join("\n", [...])** function is used to join all the individual commands into a single list of commands, separated by newlines.
 
-**${instance.tags["Name"]}:** Retrieves the Name tag of the backend instance.
-
-**${instance.public_ip}:** Retrieves the public IP address of the backend instance.
-
-**join("\n", [...])** function is used to join all the individual commands into a single list of commands, separated by newlines.
+Code:- 
 
     resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-BackEndIP" {
       connection {
@@ -511,19 +511,17 @@ This null_resource dynamically store Public_IP of FrontEnd EC2 in ansible master
        "echo 'pratik ${instance.tags["Name"]} ${instance.public_ip} 1234' >> FrontEnd-public-ip"
     ])
 
-**for instance in tolist([aws_instance.PS-EC2-FrontEnd-Block]):** This is a loop that iterates over the aws_instance.PS-EC2-FrontEnd-Block. 
+info:-
 
-The **tolist([...])** converts the list of EC2 instances into a list that can be looped through.
+- **for instance in tolist([aws_instance.PS-EC2-FrontEnd-Block]):** This is a loop that iterates over the aws_instance.PS-EC2-FrontEnd-Block.
+- The **tolist([...])** converts the list of EC2 instances into a list that can be looped through.
+- **pratik:** A static username.
+- **${instance.tags["Name"]}:** The Name tag of the frontend EC2 instance (EX, "Pratik-TF-FrontEnd").
+- **${instance.public_ip}:** The public IP address of the frontend EC2 instance.
+- **1234:** A static password (example).
+- **Fileformat** pratik <frontend_instance_name> <frontend_instance_public_ip> 1234
 
-**pratik:** A static username.
-
-**${instance.tags["Name"]}:** The Name tag of the frontend EC2 instance (EX, "Pratik-TF-FrontEnd").
-
-**${instance.public_ip}:** The public IP address of the frontend EC2 instance.
-
-**1234:** A static password (example).
-
-**Fileformat** pratik <frontend_instance_name> <frontend_instance_public_ip> 1234
+Code:-
 
     resource "null_resource" "PS-Null-Ansible-Master-Block-SAVE-FrontEndIP" {
       connection {
@@ -557,22 +555,19 @@ The **tolist([...])** converts the list of EC2 instances into a list that can be
 ## 17.Resource: null_resource [This Resource copy file from local to target & then execute]
 This null_resource copy ansible-setup.sh script file on Ansible-MAster EC2 & execute.
 
-**provisioner "file" Block**
+### **provisioner "file" Block:-**
 
     provisioner "file" {
       source      = "C:/Users/prati/terraform-2025/terraform-try5/ansible-setup.sh"
       destination = "/home/ec2-user/ansible-setup.sh"
     }
 
-provisioner "file": This provisioner uploads files from your local machine to the remote EC2 instance. 
-It is used to transfer the ansible-setup.sh script to the EC2 instance.
+Info:
+- **provisioner "file":** This provisioner uploads files from your local machine to the remote EC2 instance. It is used to transfer the ansible-setup.sh script to the EC2 instance.
+- **source:** This specifies the local path of the ansible-setup.sh script.
+- **destination:** This specifies the remote path where the file will be uploaded on the EC2 instance. In my case, it will be copied to /home/ec2-user/ansible-setup.sh on the EC2 instance.
 
-source: This specifies the local path of the ansible-setup.sh script.
-
-destination: This specifies the remote path where the file will be uploaded on the EC2 instance.
-In my case, it will be copied to /home/ec2-user/ansible-setup.sh on the EC2 instance.
-
-**provisioner "remote-exec" Block**
+### **provisioner "remote-exec" Block**
 
     provisioner "remote-exec" {
       inline = [
@@ -584,9 +579,11 @@ In my case, it will be copied to /home/ec2-user/ansible-setup.sh on the EC2 inst
        ]
     }
 
-chmod +x /home/ec2-user/ansible-setup.sh: This command makes the ansible-setup.sh script executable on the EC2 instance by changing its permissions.
+Info:-
+- **chmod +x /home/ec2-user/ansible-setup.sh:** This command makes the ansible-setup.sh script executable on the EC2 instance by changing its permissions.
+- **sudo /home/ec2-user/ansible-setup.sh:** This command runs the ansible-setup.sh script with sudo.
 
-sudo /home/ec2-user/ansible-setup.sh: This command runs the ansible-setup.sh script with sudo.
+Code:-
 
     resource "null_resource" "PS-Null-Ansible-Installation-Block" {
       connection {
@@ -609,22 +606,18 @@ sudo /home/ec2-user/ansible-setup.sh: This command runs the ansible-setup.sh scr
 
 ## 18.Resource: null_resource [This Resource Configure/Set Anible config file on Ansible-Master EC2]
 This null_resource use for settings ansible config file
-
-**sudo sed -i 's/^#become=True/become=True/' /etc/ansible/ansible.cfg** -->>  This command uncomment the become=True line and enables privilege
+- **sudo sed -i 's/^#become=True/become=True/' /etc/ansible/ansible.cfg** -->>  This command uncomment the become=True line and enables privilege
 escalation, allowing Ansible to use sudo to elevate permissions during playbook runs.
-
-**sudo sed -i 's/^#become_ask_pass=False/become_ask_pass=False/' /etc/ansible/ansible.cfg:** -->> This command enables password-based privilege 
+- **sudo sed -i 's/^#become_ask_pass=False/become_ask_pass=False/' /etc/ansible/ansible.cfg:** -->> This command enables password-based privilege 
 escalation, ensuring that sudo does not ask for a password when escalating privileges. The False ensures the prompt to ask for the password is disabled.
-
-**sudo sed -i 's/^#become_method=sudo/become_method=sudo/' /etc/ansible/ansible.cfg:**  -->> his command sets the become_method to sudo. 
+- **sudo sed -i 's/^#become_method=sudo/become_method=sudo/' /etc/ansible/ansible.cfg:**  -->> his command sets the become_method to sudo. 
 It tells Ansible to use sudo as the method to escalate privileges when needed.
-
-**sudo sed -i 's/^#become_user=root/become_user=root/' /etc/ansible/ansible.cfg:** -->> This command sets the user that Ansible will become when 
+- **sudo sed -i 's/^#become_user=root/become_user=root/' /etc/ansible/ansible.cfg:** -->> This command sets the user that Ansible will become when 
 escalating privileges. Here, it ensures that Ansible will use the root user.
+- **sudo sed -i 's/^#host_key_checking = False/host_key_checking = False/' /etc/ansible/ansible.cfg** -->> This command disables host key checking when 
+Ansible connects to remote hosts via SSH. This is useful in automated environments where host keys might change, and it's undesirable to manually approve each new key.
 
-**sudo sed -i 's/^#host_key_checking = False/host_key_checking = False/' /etc/ansible/ansible.cfg** -->> This command disables host key checking when 
-Ansible connects to remote hosts via SSH. This is useful in automated environments where host keys might change, and it's undesirable to manually 
-approve each new key.
+Code:-
 
     resource "null_resource" "PS-Null-Ansible-Master-SetAnsible-Config" {
       connection {
@@ -652,23 +645,20 @@ approve each new key.
 ## 19.Resource: null_resource [This Create Dynamic Inventory On Ansible-Master-EC2]
 This null_resource set Inventory dynamically in ansible master.
 
-**echo '[web]' | sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the [web] group to the Ansible inventory file (/etc/ansible/hosts).
+- `echo '[web]' | sudo tee -a /etc/ansible/hosts > /dev/null`: This command adds the [web] group to the Ansible inventory file (/etc/ansible/hosts).
 The **tee** command appends the string [web] to the /etc/ansible/hosts file (without outputting it to the console due to the > /dev/null).
-
-**join("\n", [...]):**  This block dynamically adds all the backend EC2 instances to the [web] group in the Ansible inventory file.
-
+- **join("\n", [...]):**  This block dynamically adds all the backend EC2 instances to the [web] group in the Ansible inventory file.
 The for instance in aws_instance.PS-EC2-Backend-block loop goes through each backend EC2 instance (PS-EC2-Backend-block) and 
 appends the corresponding public IP address along with Ansible-specific connection details (ansible_user, ansible_password, and ansible_connection).
-
-**echo '[lb]' | sudo tee -a /etc/ansible/hosts > /dev/null:** This command adds the [lb] group to the Ansible inventory file (/etc/ansible/hosts).
-
-**echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | 
-sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC2 instance (PS-EC2-FrontEnd-Block) to the [lb] group in the Ansible inventory file.
+- `echo '[lb]' | sudo tee -a /etc/ansible/hosts > /dev/null`: This command adds the [lb] group to the Ansible inventory file (/etc/ansible/hosts).
+- `echo '${aws_instance.PS-EC2-FrontEnd-Block.public_ip} ansible_user=pratik ansible_password=1234 ansible_connection=ssh' | 
+sudo tee -a /etc/ansible/hosts > /dev/null` : This command adds the frontend EC2 instance (PS-EC2-FrontEnd-Block) to the [lb] group in the Ansible inventory file.
 
 **These commands configure the Ansible inventory file by adding two groups:**
+- [web]: Contains all backend EC2 instances.
+- [lb]: Contains the frontend EC2 instance
 
-[web]: Contains all backend EC2 instances.
-[lb]: Contains the frontend EC2 instance
+Code:-
 
     resource "null_resource" "PS-Null-Ansible-Master-Block-Inventory-setup" {
       connection {
@@ -701,11 +691,11 @@ sudo tee -a /etc/ansible/hosts > /dev/null:**  This command adds the frontend EC
     }
 
 ## 20. Destroy & Information about Author:[This save file on local machine when terraform destroy cmd use]
-
-**when = destroy:** This specifies that the command should only run when the resource is destroyed.
-
-**command = "echo ALL set-up/Infrastucture or servers destroyed....> All_Destroy.txt":** The command to be executed. It writes a message to a 
+- **when = destroy:** This specifies that the command should only run when the resource is destroyed.
+- **command = "echo ALL set-up/Infrastucture or servers destroyed....> All_Destroy.txt":** The command to be executed. It writes a message to a 
 file named All_Destroy.txt indicating that the setup, infrastructure, or servers have been destroyed. The output is redirected to the file.
+
+Code:- 
 
     resource "null_resource" "PS-Local-exec-Destroy-block" {
       provisioner "local-exec" {
