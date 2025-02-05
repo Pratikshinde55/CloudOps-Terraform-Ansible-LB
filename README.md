@@ -131,6 +131,17 @@ Here Entire code explain step by step:
  ## 2.Resource: aws_vpc [This Create VPC with custom CIDR]
  **cidr_block:** Defines the IP range for the VPC.
 
+ #### Understanding the VPC CIDR (/16) [Formula= 22^(32−subnet_mask)]
+ Total IPs:- 2^(32−16) = 2^16 = 65,536 IPs
+
+ In AWS VPC, 5 IP addresses are reserved in each subnet for specific networking purposes:-
+ 
+ **Network Address: The first IP in the subnet (e.g., 10.0.1.0 in 10.0.1.0/24).**
+ **VPC Router: Used by AWS for the VPC router (e.g., 10.0.1.1).**
+ **Amazon DNS: Reserved for AWS DNS server (e.g., 10.0.1.2).**
+ **Future Use: Reserved for future AWS use (e.g., 10.0.1.3).**
+ **Broadcast Address: The last IP in the subnet (e.g., 10.0.1.255 in 10.0.1.0/24).**
+
     resource "aws_vpc" "PS-vpc-block" {
       cidr_block = "10.0.0.0/16"
       tags = {
