@@ -315,27 +315,20 @@ public IP address upon creation.
 Here, the **count** is set to the number of backend EC2 instances, aws_instance.PS-EC2-Backend-block.
 So, if 3 backend instances are created, count will be 3, and Terraform will run this null_resource block 3 times.
 
-**host = aws_instance.PS-EC2-Backend-block[count.index].public_ip:** The public IP address of the backend EC2 instance. 
-count.index ensures that the null_resource connects to the correct instance.
-
-**sudo useradd pratik:** Creates a new user named pratik on the EC2 instance with sudo (superuser) privileges.
-
-**echo 'pratik:1234' | sudo chpasswd:** Sets the password for the newly created user pratik to 1234. The chpasswd command is used to change the password.
-
-**echo 'pratik ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers:** This grants pratik user root privileges without requiring a password by 
-modifying the /etc/sudoers file. This is useful for automation because it allows the pratik user to run commands as root without needing to enter a password.
-
-**sudo sed -i '/^PasswordAuthentication no/d' /etc/ssh/sshd_config:** This command modifies the SSH server configuration (/etc/ssh/sshd_config)
-by removing any line that disables password authentication. 
-This is important because it ensures the system will accept password authentication for SSH, which could otherwise be disabled by default.
-
-**sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config:** This command allows root login via SSH by changing the
+- **host = aws_instance.PS-EC2-Backend-block[count.index].public_ip:** The public IP address of the backend EC2 instance. count.index ensures that the null_resource connects to the correct instance.
+- **sudo useradd pratik:** Creates a new user named pratik on the EC2 instance with sudo (superuser) privileges.
+- **echo 'pratik:1234' | sudo chpasswd:** Sets the password for the newly created user pratik to 1234. The chpasswd command is used to change the password.
+- **echo 'pratik ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers:** This grants pratik user root privileges without requiring a password by modifying the /etc/sudoers file. This is useful for automation 
+ because it allows the pratik user to run commands as root without needing to enter a password.
+- **sudo sed -i '/^PasswordAuthentication no/d' /etc/ssh/sshd_config:** This command modifies the SSH server configuration (/etc/ssh/sshd_config)
+by removing any line that disables password authentication. This is important because it ensures the system will accept password authentication for SSH, which could otherwise be disabled by default.
+- **sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config:** This command allows root login via SSH by changing the
 PermitRootLogin setting to yes.
-
-**sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config:**
-This enables password authentication for SSH, ensuring that users can log in using a password (in this case, the password for pratik)
-
-**sudo systemctl restart sshd:** This restarts the SSH service to apply the changes made to the SSH configuration.
+- **sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config:**
+  This enables password authentication for SSH, ensuring that users can log in using a password (in this case, the password for pratik)
+- **sudo systemctl restart sshd:** This restarts the SSH service to apply the changes made to the SSH configuration.
+  
+Code:-
 
     resource "null_resource" "PS-NULL-Backend-ssh-block" {
       # length for BackEnd resource
