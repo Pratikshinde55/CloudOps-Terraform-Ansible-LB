@@ -175,32 +175,17 @@ Availability Zone (AZ) using the element function again.
 ## 4.Variables: [ SubnetRange and AZRange This for Multi-Subnet]
 variable block:  This make flexibility to add subet's cidr_block & AZs. 
 
-#### Subnet CIDR Calculation (/24)
-Each subnet has: Total IPs:- 2^(32−24) = 2^8 = 256 IPs per subnet.
+### Subnet CIDR Calculation (/24)
+Each subnet has: Total IPs:- `2^(32−24) = 2^8 = 256` IPs per subnet.
 
-Usable IPs (After AWS Reservation): 256−5 = 251 usable IPs per subnet
+Usable IPs (After AWS Reservation): `256−5 = 251` usable IPs per subnet
 
-for two subnet= /24 + /24 -10 = 502 (251+251=502)
-
-AWS reserves the following IPs in each subnet: (5 per subnet)
-- Network Address: 10.0.1.0 & 10.0.2.0 (identifies the subnet, not assignable)
-- VPC Router: 10.0.1.1 & 10.0.2.1 (used for routing traffic)
-- Amazon DNS: 10.0.1.2 & 10.0.2.2 (used for AWS DNS resolution)
-- Reserved by AWS for future use: 10.0.1.3 & 10.0.2.3
-- Broadcast Address: 10.0.1.255 & 10.0.2.255 (used for broadcast, not assignable
+for two subnet= `/24 + /24 -10 = 502 (251+251=502)`
 
 Summary:---
 - VPC (/16) has 65,536 usable IPs.
 - Each subnet (/24) has 251 usable IPs.
-- We can add more /24 subnets up to 256 (10.0.0.0 to 10.0.255.0/24).
-
-# AWS Subnet IP Calculation
-
-| **Subnet**    | **CIDR**         | **Total IPs** | **Reserved IPs** | **Usable IPs** |
-|--------------|----------------|--------------|------------------|--------------|
-| Subnet 1 | `10.0.1.0/24` | 256 | 5 | **251** |
-| Subnet 2 | `10.0.2.0/24` | 256 | 5 | **251** |
-| **Total**  | **`/24 + /24`** | **512** | **10** | **502** |
+- We can add more /24 subnets up to 256 (`10.0.0.0` to `10.0.255.0/24`).
 
 ### **AWS Reserved IPs per Subnet**
 AWS reserves **5 IPs per subnet**:
@@ -210,6 +195,12 @@ AWS reserves **5 IPs per subnet**:
 4. **AWS Future Use** (`10.0.1.3`, `10.0.2.3`) - Reserved for AWS  
 5. **Broadcast Address** (`10.0.1.255`, `10.0.2.255`) - Used for broadcasts
 
+
+| **Subnet**    | **CIDR**         | **Total IPs** | **Reserved IPs** | **Usable IPs** |
+|--------------|----------------|--------------|------------------|--------------|
+| Subnet 1 | `10.0.1.0/24` | 256 | 5 | **251** |
+| Subnet 2 | `10.0.2.0/24` | 256 | 5 | **251** |
+| **Total**  | **`/24 + /24`** | **512** | **10** | **502** |
 
 
     variable "SubnetRange" {
