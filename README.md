@@ -132,7 +132,7 @@ Code:-
  ## 2.Resource: aws_vpc [This Create VPC with custom CIDR]
  **cidr_block:** Defines the IP range for the VPC.
 
- #### Understanding the VPC CIDR (/16) [`Formula= 22^(32−subnet_mask)`]
+ #### Understanding the VPC CIDR (/16) [`Formula= 2^(32−subnet_mask)`]
  Total IPs:- `2^(32−16) = 2^16 = 65,536` IPs
 
  For the VPC (`10.0.0.0/16`), there is no need to subtract 5 IPs because AWS does not reserve IPs at the VPC level, only at the subnet level.
