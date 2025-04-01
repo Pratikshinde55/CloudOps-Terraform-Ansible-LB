@@ -19,7 +19,7 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 Only Follwing three manual steps otherwise all things are Automatic
 1. [step-1 (run terraform file)](#step-1)
 2. [Step-2(Add BackEnd Public_IPs at pratik.cfg.j2 template)](#step-2) 
-3. Step-3(Run Ansible-playbooks of WebServer & LoadBalancer)
+3. [Step-3(Run Ansible-playbooks of WebServer & LoadBalancer)](#step-3)
 
 ## Terraform Concepts use:
 1. Resource
@@ -88,7 +88,7 @@ Just need to update jinja template where add Public_IPs of BackEnd(Only one manu
 ![ansible-cfg](https://github.com/user-attachments/assets/bf4fb9af-9f93-4664-94f7-eb6831f983e0)
 ![ansible-cfg-2](https://github.com/user-attachments/assets/45c2dbe0-f0d7-4798-869a-7f1360d5b281)
 
-## Step-3: [Run Ansible_Playbooks both]
+## <a id="step-3"></a>Step-3: [Run Ansible_Playbooks both]
 Now Only Need to Run Playbooks Our Entire Configuration of LoadBalncer & WebServer is creates:
 
      ansible-playbook Playbook-webserver.yml
