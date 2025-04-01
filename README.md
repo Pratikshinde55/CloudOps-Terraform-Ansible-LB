@@ -8,12 +8,12 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 ## Tools/Technology use:
   This Entire project is fully automatic only set RoundRobin backend IPs is maunal(90% Automation & 10% Manual)
 - [x] Terraform (Create Ansible Master-Slave Architecture for LB)
-2. AWS Cloud(EC2, VPC, Subnet, Internate_gateway, Route_table, Security_Group)
-3. Shell Scripting (Download Ansible, Clone my LB GitHub repo)
-4. GitHub(Kept Ansible-playbook for LB & BackEnd)
-5. Ansible(using Terraform dynamically create Inventory, set Ansible config file)
-6. Load Balancer(haproxy LB is used as FrontEnd)
-7. Apache webserver(Httpd webserver used as BackEnd for LB)
+- [x] AWS Cloud(EC2, VPC, Subnet, Internate_gateway, Route_table, Security_Group)
+- [x] Shell Scripting (Download Ansible, Clone my LB GitHub repo)
+- [x] GitHub(Kept Ansible-playbook for LB & BackEnd)
+- [x] Ansible(using Terraform dynamically create Inventory, set Ansible config file)
+- [x] Load Balancer(haproxy LB is used as FrontEnd)
+- [x] Apache webserver(Httpd webserver used as BackEnd for LB)
 
 ## Full Automation:
 Only Follwing three manual steps otherwise all things are Automatic
