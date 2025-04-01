@@ -17,8 +17,8 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 
 ## Full Automation:
 Only Follwing three manual steps otherwise all things are Automatic
-1. [step-1 run terraform file)](#step-1)
-2. Step-2(Add BackEnd Public_IPs at pratik.cfg.j2 template)
+1. [step-1 (run terraform file)](#step-1)
+2. [Step-2(Add BackEnd Public_IPs at pratik.cfg.j2 template)](#step-2) 
 3. Step-3(Run Ansible-playbooks of WebServer & LoadBalancer)
 
 ## Terraform Concepts use:
@@ -71,7 +71,7 @@ My WorkSpace for this project:
 - Inside my repo all things come that is Playbook-webserver.yml, Playbook-LoadBalancer.yml, pratik.cfg.j2
 ![pratik-repo](https://github.com/user-attachments/assets/7df7fa00-d99e-4f9a-ae91-cd28b336d6e3)
 
-## Step-2: [Upadate BackEnd Public_IPs at LB register template on Ansible EC2]
+## <a id="step-2"></a>Step-2: [Upadate BackEnd Public_IPs at LB register template on Ansible EC2]
 Just need to update jinja template where add Public_IPs of BackEnd(Only one manual Step) BackEnd-public-ip file have all public Ips of backends
 
      sudo vim pratik.cfg.j2
