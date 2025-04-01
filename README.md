@@ -17,7 +17,7 @@ In this project I use Terraform as Infrastucture as code tool, By using Terrafor
 
 ## Full Automation:
 Only Follwing three manual steps otherwise all things are Automatic
-1. [Step-1(Run terraform file)](#deployment-section)
+1. [step-1 run terraform file)](#step-1)
 2. Step-2(Add BackEnd Public_IPs at pratik.cfg.j2 template)
 3. Step-3(Run Ansible-playbooks of WebServer & LoadBalancer)
 
