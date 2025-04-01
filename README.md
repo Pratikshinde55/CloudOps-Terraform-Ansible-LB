@@ -35,8 +35,6 @@ Only Follwing three manual steps otherwise all things are Automatic
 11. tolist
 
 ## <a id="step-1"></a>Step-1 Run Terraform file Create all Infrastructure & Configuration:      
-
-Step-1 [Run Terraform file Create all Infrastructure & Configuration]
 My WorkSpace for this project:
 ![Workspace](https://github.com/user-attachments/assets/02faefa9-95bc-4d30-86c9-f0d10d253d04)
 
