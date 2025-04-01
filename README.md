@@ -3,7 +3,7 @@ Cloud Infrastructure Automation with Terraform and Ansible
 ![End-to-End Cloud Automation with Terraform, Ansible, LB, and GitHub](https://github.com/user-attachments/assets/d4bd950a-2afc-462b-8d32-011d4cc2d768)
 
 ## OverView-Setup: 
-==In this project== I use Terraform as Infrastucture as code tool, By using Terraform i create Entire Infrastucrture on AWS Cloud 
+==In this project==I use Terraform as Infrastucture as code tool, By using Terraform i create Entire Infrastucrture on AWS Cloud 
 
 ## Tools/Technology use:
   This Entire project is fully automatic only set RoundRobin backend IPs is maunal(90% Automation & 10% Manual)
